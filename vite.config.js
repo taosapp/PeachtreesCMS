@@ -9,13 +9,11 @@ export default defineConfig({
     proxy: {
       '/pt_api': {
         target: 'http://localhost',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/pt_api/, '/PeachtreesCMS/api')
+        changeOrigin: true
       },
       '/upload': {
         target: 'http://localhost',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/upload/, '/PeachtreesCMS/upload')
+        changeOrigin: true
       }
     }
   },

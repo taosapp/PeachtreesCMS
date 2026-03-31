@@ -4,15 +4,19 @@ import { useLanguage } from '../../contexts/LanguageContext'
 
 export default function Data() {
   const { lang } = useLanguage()
+  const apiBase = import.meta.env.VITE_API_BASE_URL || '/pt_api/'
+  const apiUrl = (path) => `${apiBase.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
   const [selectedFile, setSelectedFile] = useState(null)
   const [importing, setImporting] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [exportingStatic, setExportingStatic] = useState(false)
+  const [exportStatus, setExportStatus] = useState({ message: '', progress: 0, done: false })
   const [result, setResult] = useState(null)
 
   const handleExport = async () => {
     setExporting(true)
     try {
-      const response = await fetch('/api/data/export.php', {
+      const response = await fetch(apiUrl('/data/export.php'), {
         method: 'GET',
         credentials: 'include'
       })
@@ -44,6 +48,73 @@ export default function Data() {
       alert(err.message)
     } finally {
       setExporting(false)
+    }
+  }
+
+
+  const handleStaticExport = async () => {
+    setExportingStatic(true)
+    setExportStatus({ message: lang('exportStaticStarting'), progress: 0, done: false })
+    let polling = true
+
+    const pollStatus = async () => {
+      if (!polling) return
+      try {
+        const res = await fetch(apiUrl('/data/export-static-status.php'), {
+          method: 'GET',
+          credentials: 'include'
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data?.success) {
+            const status = data.data
+            const progress = status.progress ?? 0
+            const message = status.message || ''
+            const done = status.status === 'done'
+            setExportStatus({ message, progress, done })
+            if (done) {
+              polling = false
+            }
+          }
+        }
+      } catch (err) {
+        // ignore polling errors
+      }
+    }
+
+    const timer = setInterval(pollStatus, 1000)
+    pollStatus()
+
+    try {
+      const response = await fetch(apiUrl('/data/export-static.php'), {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        let message = lang('downloadFailed')
+        try {
+          const data = await response.json()
+          message = data.message || message
+        } catch (err) {
+          console.error('Failed to parse export error response:', err)
+        }
+        throw new Error(message)
+      }
+
+      const data = await response.json()
+      if (data?.success) {
+        setExportStatus({ message: lang('exportStaticDone'), progress: 100, done: true })
+      } else {
+        throw new Error(data?.message || lang('downloadFailed'))
+      }
+    } catch (err) {
+      setExportStatus({ message: err.message, progress: 0, done: false })
+      alert(err.message)
+    } finally {
+      polling = false
+      clearInterval(timer)
+      setExportingStatic(false)
     }
   }
 
@@ -98,6 +169,37 @@ export default function Data() {
                 <i className={`bi ${exporting ? 'bi-arrow-repeat' : 'bi-file-earmark-arrow-down'} me-2`}></i>
                 {exporting ? lang('exporting') : lang('downloadExport')}
               </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12 col-xl-6">
+          <div className="card shadow-sm h-100">
+            <div className="card-body">
+              <h5 className="card-title">
+                <i className="bi bi-globe2 me-2"></i>
+                {lang('exportStaticSite')}
+              </h5>
+              <p className="text-muted">{lang('exportStaticDescription')}</p>
+              <button
+                type="button"
+                className="btn btn-outline-primary"
+                onClick={handleStaticExport}
+                disabled={exportingStatic}
+              >
+                <i className={`bi ${exportingStatic ? 'bi-arrow-repeat' : 'bi-box-arrow-down'} me-2`}></i>
+                {exportingStatic ? lang('exporting') : lang('exportStaticStart')}
+              </button>
+              {exportStatus.message && (
+                <div className="mt-2 text-muted small">
+                  {exportStatus.progress}% - {exportStatus.message}
+                </div>
+              )}
+              {exportStatus.done && (
+                <div className="mt-2 small text-success">
+                  {lang('exportStaticInstruction')}
+                </div>
+              )}
             </div>
           </div>
         </div>

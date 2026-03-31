@@ -70,6 +70,23 @@ define('JWT_EXPIRE', intval($_ENV['JWT_EXPIRE'] ?? 86400));
 $timezone = $_ENV['TIMEZONE'] ?? 'Asia/Shanghai';
 date_default_timezone_set($timezone);
 
+// 强制输出编码为 UTF-8，避免出现 UTF-16/UTF-32 输出导致的 0x00 字节
+ini_set('default_charset', 'UTF-8');
+if (function_exists('mb_internal_encoding')) {
+    mb_internal_encoding('UTF-8');
+}
+if (function_exists('mb_http_output')) {
+    mb_http_output('pass');
+}
+if (function_exists('mb_regex_encoding')) {
+    mb_regex_encoding('UTF-8');
+}
+ini_set('mbstring.encoding_translation', '0');
+// mbstring.http_output 已废弃（PHP 8.2+），避免触发 Deprecated 输出
+ini_set('mbstring.func_overload', '0');
+ini_set('output_handler', '');
+ini_set('zlib.output_compression', '0');
+
 // 错误报告配置
 if ($isProduction) {
     error_reporting(E_ALL);
@@ -114,5 +131,17 @@ function getDB(): PDO {
 
 // 启动 Session
 if (session_status() === PHP_SESSION_NONE) {
+    $sessionPath = __DIR__ . '/sessions';
+    if (!is_dir($sessionPath)) {
+        @mkdir($sessionPath, 0755, true);
+    }
+    if (is_dir($sessionPath)) {
+        session_save_path($sessionPath);
+    }
+    session_set_cookie_params([
+        'path' => '/',
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
     session_start();
 }

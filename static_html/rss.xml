@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+<title>PeachtreesCMS</title>
+<link>http://localhost</link>
+<description></description>
+<item>
+<title>系统功能介绍</title>
+<link>http://localhost/post/2.html</link>
+<guid>http://localhost/post/2.html</guid>
+<pubDate>Tue, 24 Mar 2026 09:18:51 +0000</pubDate>
+<description><![CDATA[]]></description>
+</item>
+<item>
+<title>欢迎使用 PeachtreesCMS</title>
+<link>http://localhost/post/1.html</link>
+<guid>http://localhost/post/1.html</guid>
+<pubDate>Tue, 24 Mar 2026 09:18:51 +0000</pubDate>
+<description><![CDATA[]]></description>
+</item>
+</channel></rss>
