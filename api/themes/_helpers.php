@@ -122,22 +122,20 @@ function loadThemeLayout(string $slug, ?array $userLayoutConfig = null): array {
         return $systemDefaults;
     }
 
-    // 1. 获取该主题的文件层默认布局 (layout.json)
+    // 1. 使用系统默认布局
     $fileDefaults = $systemDefaults;
-    $layoutFile = themesBaseDir() . '/' . $slug . '/layout.json';
-    if (is_file($layoutFile)) {
-        $decoded = json_decode(file_get_contents($layoutFile), true);
-        if (is_array($decoded)) {
-            $layoutInput = $decoded['layout'] ?? $decoded;
-            $fileDefaults = [
-                'home' => normalizePageLayout($layoutInput['home'] ?? null, $systemDefaults['home'], 'home'),
-                'post' => normalizePageLayout($layoutInput['post'] ?? null, $systemDefaults['post'], 'post'),
-            ];
-        }
+    // 主题布局不再依赖 layout.json/theme.json
+    if ($slug === 'peachtrees-two-column') {
+        $fileDefaults['home']['template'] = 'two-column';
+        $fileDefaults['post']['template'] = 'two-column';
     }
 
     // 2. 如果没有用户自定义配置，直接返回文件布局
     if (!is_array($userLayoutConfig)) {
+        if ($slug === 'peachtrees-two-column') {
+            $fileDefaults['home']['template'] = 'two-column';
+            $fileDefaults['post']['template'] = 'two-column';
+        }
         return $fileDefaults;
     }
 
@@ -153,10 +151,15 @@ function loadThemeLayout(string $slug, ?array $userLayoutConfig = null): array {
         $postLayout['left_sidebar_blocks'] = $postLayout['sidebar_blocks'];
     }
 
-    return [
+    $result = [
         'home' => normalizePageLayout($homeLayout, $fileDefaults['home'], 'home'),
         'post' => normalizePageLayout($postLayout, $fileDefaults['post'], 'post'),
     ];
+    if ($slug === 'peachtrees-two-column') {
+        $result['home']['template'] = 'two-column';
+        $result['post']['template'] = 'two-column';
+    }
+    return $result;
 }
 
 function scanThemePackages(PDO $pdo): void {

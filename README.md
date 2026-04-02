@@ -80,6 +80,19 @@ pnpm dev:admin   # 只启动后台页面
 - 前台：`http://localhost:5173`
 - 后台：`http://localhost:5173/admin.html`
 
+## 静态导出（命令行）
+
+当你已经在项目根目录（`PeachtreesCMS/`）时，手动运行 Node 导出命令如下：
+
+```bash
+node scripts/ssg-export.mjs --data static_html/.export_payload.json --out static_html --status static_html/.export_status.json
+```
+
+说明：
+- `static_html/.export_payload.json` 会在点击后台“导出静态网站”时由 API 自动生成。
+- `static_html/.export_payload.json` 是导出时由 API 临时生成的文件，导出结束后会被删除。
+- 该命令会覆盖并重新生成 `static_html/`。
+
 ## 生产环境部署
 
 ### 部署架构

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>http://localhost/index.html</loc></url>
-<url><loc>http://localhost/tech.html</loc></url>
-<url><loc>http://localhost/news.html</loc></url>
-<url><loc>http://localhost/post/2.html</loc></url>
-<url><loc>http://localhost/post/1.html</loc></url>
+<url><loc>index.html</loc></url>
+<url><loc>news.html</loc></url>
+<url><loc>tech.html</loc></url>
+<url><loc>life.html</loc></url>
+<url><loc>post/2.html</loc></url>
+<url><loc>post/1.html</loc></url>
 </urlset>

@@ -1,8 +1,0 @@
-{
-  "name": "Peachtrees Default",
-  "description": "System Default Theme",
-  "version": "1.0.0",
-  "author": "PeachtreesCMS",
-  "entry_css": "style.css",
-  "thumbnail": "thumbnail.svg"
-}
