@@ -8,7 +8,11 @@ export default function Header() {
     <header className="header">
       <h1>
         <NavLink to="/" className="header-link">
-          {siteOptions.site_title}
+          {siteOptions.show_logo ? (
+            <img src="/theme/default/logo.png" alt={siteOptions.site_title} />
+          ) : (
+            siteOptions.site_title
+          )}
         </NavLink>
       </h1>
     </header>

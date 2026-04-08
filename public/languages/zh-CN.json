@@ -232,5 +232,9 @@
     "refresh": "刷新",
     "mediaUpload": "上传媒体",
     "mediaUploadHint": "支持图片、视频、音频文件，可多选",
-    "uploading": "上传中..."
+    "uploading": "上传中...",
+    "showLogo": "显示 Logo 图片",
+    "showLogoHelp": "在页面头部显示 /theme/default/logo.png，site_title 作为 alt 属性值",
+    "yes": "是",
+    "no": "否"
 }

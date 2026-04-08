@@ -232,5 +232,9 @@
     "refresh": "Refresh",
     "mediaUpload": "Upload Media",
     "mediaUploadHint": "Supports images, videos, and audio files. Multiple selection allowed.",
-    "uploading": "Uploading..."
+    "uploading": "Uploading...",
+    "showLogo": "Show Logo Image",
+    "showLogoHelp": "Display /theme/default/logo.png in header, use site_title as alt attribute",
+    "yes": "Yes",
+    "no": "No"
 }

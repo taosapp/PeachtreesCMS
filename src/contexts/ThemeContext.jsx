@@ -28,7 +28,7 @@ const ThemeContext = createContext(null)
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(null)
-  const [siteOptions, setSiteOptions] = useState({ site_title: '', footer_text: '', default_lang: 'zh-CN' })
+  const [siteOptions, setSiteOptions] = useState({ site_title: '', footer_text: '', default_lang: 'zh-CN', show_logo: false })
   const [loading, setLoading] = useState(true)
   const [isAdminRoute, setIsAdminRoute] = useState(() => window.location.hash.startsWith('#/admin'))
 
@@ -57,7 +57,8 @@ export function ThemeProvider({ children }) {
           setSiteOptions({
             site_title: optionsRes.data.site_title || '',
             footer_text: optionsRes.data.footer_text || '',
-            default_lang: optionsRes.data.default_lang || 'zh-CN'
+            default_lang: optionsRes.data.default_lang || 'zh-CN',
+            show_logo: optionsRes.data.show_logo === '1' || optionsRes.data.show_logo === true
           })
         }
       } catch (err) {
@@ -120,7 +121,8 @@ export function ThemeProvider({ children }) {
         setSiteOptions({
           site_title: res.data.site_title || '',
           footer_text: res.data.footer_text || '',
-          default_lang: res.data.default_lang || 'zh-CN'
+          default_lang: res.data.default_lang || 'zh-CN',
+          show_logo: res.data.show_logo === '1' || res.data.show_logo === true
         })
       }
     } catch (err) {

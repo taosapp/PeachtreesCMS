@@ -111,8 +111,8 @@ export default function Themes() {
       ) : (
         <div className="row g-3">
           {themes.map((theme) => (
-            <div key={theme.id} className="col-12 col-md-6 col-xl-4">
-              <div className="card shadow-sm h-100 theme-card">
+            <div key={theme.id} className="col-12 col-md-4 col-xl-2">
+              <div className="card shadow-sm h-80 theme-card">
                 <div className="position-relative">
                   <ThemeThumbnail slug={theme.slug} name={theme.name} thumbnail={theme.thumbnail} />
                   <span className={`badge position-absolute top-0 end-0 m-2 ${theme.is_active === 1 ? 'bg-success' : 'bg-secondary'}`}>
@@ -122,6 +122,8 @@ export default function Themes() {
                 <div className="card-body d-flex flex-column">
                   <div className="d-flex justify-content-between align-items-start mb-1">
                     <h6 className="card-title mb-0">{theme.name}</h6>
+                  </div>
+                  <div className="small text-muted mb-2">
                     <code>{theme.slug}</code>
                   </div>
                   <div className="small text-muted mb-2">
@@ -130,7 +132,7 @@ export default function Themes() {
                   <p className="card-text text-muted small flex-grow-1 mb-3">
                     {theme.description || lang('noDescription')}
                   </p>
-                  <div className="d-grid gap-2">
+                  <div className="d-grid gap-2" style={{ height: '42px' }}>
                     {theme.is_active !== 1 && (
                       <button
                         className="btn btn-sm btn-primary"

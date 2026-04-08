@@ -12,7 +12,8 @@ export default function Settings() {
     const [settings, setSettings] = useState({
         site_title: '',
         footer_text: '',
-        default_lang: 'zh-CN'
+        default_lang: 'zh-CN',
+        show_logo: false
     })
 
     useEffect(() => {
@@ -27,7 +28,8 @@ export default function Settings() {
                 setSettings({
                     site_title: res.data.site_title || '',
                     footer_text: res.data.footer_text || '',
-                    default_lang: res.data.default_lang || 'zh-CN'
+                    default_lang: res.data.default_lang || 'zh-CN',
+                    show_logo: res.data.show_logo === '1' || res.data.show_logo === true
                 })
             }
         } catch (err) {
@@ -41,7 +43,11 @@ export default function Settings() {
         e.preventDefault()
         setSaving(true)
         try {
-            await optionsAPI.update(settings)
+            const dataToSave = {
+                ...settings,
+                show_logo: settings.show_logo ? '1' : '0'
+            }
+            await optionsAPI.update(dataToSave)
             if (refetchSettings) {
                 await refetchSettings()
             }
@@ -86,6 +92,41 @@ export default function Settings() {
                                 required
                             />
                             <div className="form-text">{lang('siteTitleHelp')}</div>
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="form-label fw-bold">{lang('showLogo')}</label>
+                            <div>
+                                <div className="form-check form-check-inline">
+                                    <input
+                                        className="form-check-input"
+                                        type="radio"
+                                        name="show_logo"
+                                        id="show_logo_yes"
+                                        value="1"
+                                        checked={settings.show_logo === true}
+                                        onChange={() => setSettings({ ...settings, show_logo: true })}
+                                    />
+                                    <label className="form-check-label" htmlFor="show_logo_yes">
+                                        {lang('yes')}
+                                    </label>
+                                </div>
+                                <div className="form-check form-check-inline">
+                                    <input
+                                        className="form-check-input"
+                                        type="radio"
+                                        name="show_logo"
+                                        id="show_logo_no"
+                                        value="0"
+                                        checked={settings.show_logo === false}
+                                        onChange={() => setSettings({ ...settings, show_logo: false })}
+                                    />
+                                    <label className="form-check-label" htmlFor="show_logo_no">
+                                        {lang('no')}
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="form-text">{lang('showLogoHelp')}</div>
                         </div>
 
                         <div className="mb-4">
