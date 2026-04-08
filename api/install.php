@@ -8,6 +8,13 @@ require_once __DIR__ . '/i18n.php';
 
 ini_set('display_errors', '0');
 
+// Check if installation is already completed
+$installedFile = __DIR__ . '/.installed';
+if (file_exists($installedFile)) {
+    http_response_code(403);
+    die('Installation already completed. Delete .installed file to reinstall.');
+}
+
 function h(string $value): string {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
@@ -206,9 +213,12 @@ if ($action === 'install' && empty($errors)) {
                     'DB_NAME' => $form['db_name'],
                     'DB_USER' => $form['db_user'],
                     'DB_PASS' => $form['db_pass'],
-                    'JWT_SECRET' => bin2hex(random_bytes(16))
+                    'JWT_SECRET' => bin2hex(random_bytes(32))
                 ]);
                 file_put_contents($envPath, $env);
+
+                // Create installation lock file
+                file_put_contents($installedFile, date('Y-m-d H:i:s'));
 
                 $success = __('install.complete');
                 $step = 4;

@@ -10,13 +10,21 @@ $allowedOrigins = [
     'http://localhost',       // Local production
 ];
 
+// Allow custom origins from environment variable (comma-separated)
+$envOrigins = getenv('CORS_ALLOWED_ORIGINS');
+if ($envOrigins) {
+    $envOriginsArray = array_map('trim', explode(',', $envOrigins));
+    $allowedOrigins = array_merge($allowedOrigins, $envOriginsArray);
+}
+
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
 if (in_array($origin, $allowedOrigins, strict: true)) {
     header("Access-Control-Allow-Origin: $origin");
 } else {
-    // Allow all origins in development, should comment out in production
-    header("Access-Control-Allow-Origin: *");
+    // Production: deny access for unknown origins
+    // Do NOT use wildcard (*) in production
+    header("Access-Control-Allow-Origin: " . ($_SERVER['HTTP_HOST'] === 'localhost' ? '*' : ''));
 }
 
 // Allowed HTTP methods

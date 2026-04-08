@@ -1,0 +1,45 @@
+# PeachtreesCMS Nginx 安全配置示例
+
+server {
+    listen 80;
+    listen [::]:80 default_server;
+
+    root /var/www/html;
+    index index.html;
+    server_name your-domain.com;
+
+    # 拒绝访问敏感文件
+    location ~ /\.env {
+        deny all;
+        return 404;
+    }
+
+    location ~ /\.installed {
+        deny all;
+        return 404;
+    }
+
+    # PHP 处理
+    location ~ ^/pt_api/(.+\.php)$ {
+        fastcgi_pass unix:/var/run/php/php-fpm.sock;
+        index index.php;
+        # windows
+        # fastcgi_pass 127.0.0.1:9000;
+        # linux
+        fastcgi_param SCRIPT_FILENAME /var/www/pt_api/$1;
+        include fastcgi_params;
+    }
+
+    # 前端静态资源
+    location / {
+        # try_files $uri $uri/ /index.html;
+        # 对于 Hash 路由，其实只要确保能读到文件即可。
+        # 原配置中的 /index.html 兜底逻辑在 Hash 模式下永远不会触发，但留着也没副作用。
+        try_files $uri $uri/ =404;
+
+        # 安全响应头
+        add_header X-Content-Type-Options nosniff;
+        add_header X-Frame-Options DENY;
+        add_header X-XSS-Protection "1; mode=block";
+    }
+}

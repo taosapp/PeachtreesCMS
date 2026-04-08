@@ -39,7 +39,7 @@ function requireAuth(): array {
  * @return bool
  */
 function isAdmin(): bool {
-    return isset($_SESSION['uid']) && $_SESSION['uid'] == 1;
+    return isset($_SESSION['uid']) && $_SESSION['uid'] === 1;
 }
 
 /**

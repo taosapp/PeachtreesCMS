@@ -8,10 +8,29 @@ require_once __DIR__ . '/../cors.php';
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../response.php';
 require_once __DIR__ . '/../password.php';
+require_once __DIR__ . '/../rate_limit.php';
 
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     error('Method not allowed', 405);
+}
+
+// Get client IP for rate limiting
+function getClientIP(): string {
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        return trim($ips[0]);
+    }
+    return $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+}
+
+// Check rate limit (5 attempts per 15 minutes per IP)
+$ip = getClientIP();
+$rateLimit = checkRateLimit($ip, 'login', 5, 900);
+
+if (!$rateLimit['allowed']) {
+    $retryMinutes = ceil($rateLimit['retry_after'] / 60);
+    error('Too many login attempts. Please try again in ' . $retryMinutes . ' minute(s).', 429);
 }
 
 // Get request parameters
@@ -39,6 +58,14 @@ try {
     // Verify password
     if (!verifyPassword($password, $user['password_hash'])) {
         error('Incorrect password');
+    }
+
+    // Clear rate limit on successful login
+    clearRateLimit($ip, 'login');
+
+    // Regenerate session ID to prevent session fixation attack
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_regenerate_id(true);
     }
 
     // Set Session

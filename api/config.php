@@ -146,8 +146,17 @@ if (session_status() === PHP_SESSION_NONE) {
     if (is_dir($sessionPath)) {
         session_save_path($sessionPath);
     }
+    
+    // Set secure session cookie parameters
+    // secure: true when HTTPS is detected, ensures cookies only sent over HTTPS
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+                (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+                (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+    
     session_set_cookie_params([
+        'lifetime' => 0,
         'path' => '/',
+        'secure' => $isSecure,
         'httponly' => true,
         'samesite' => 'Lax'
     ]);

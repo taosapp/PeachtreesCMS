@@ -27,3 +27,9 @@ upload/*
 
 # sessions
 api/sessions/*
+
+# Rate limit data
+api/rate_limits/*
+
+# Installation lock file
+api/.installed

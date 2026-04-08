@@ -65,23 +65,33 @@ http {
     server {
         listen       80;
         server_name  your-domain.com;
-
         root         /var/www/html;
-        index        index.php;
+
+        # 拒绝访问敏感文件
+        location ~ /\.env {
+            deny all;
+            return 404;
+        }
+
+        location ~ /\.installed {
+            deny all;
+            return 404;
+        }
 
         # PeachtreesCMS
-        location /pt_api/ {
-            alias /var/www/html/api/;
-            try_files $uri $uri/ =404;
+        location ~ ^/pt_api/(.+\.php)$ {
+            fastcgi_pass unix:/var/run/php/php-fpm.sock;
+            index index.php;
+            # windows
+            # fastcgi_pass 127.0.0.1:9000;
+            # linux
+            fastcgi_param SCRIPT_FILENAME /var/www/pt_api/$1;
+            include fastcgi_params;
         }
+
+        # upload follder alias
         location /pt_upload/ {
             alias /var/www/html/pt_upload/;
-        }
-        location ~ ^/pt_api/(.+\.php)$ {
-            include fastcgi_params;
-            fastcgi_pass 127.0.0.1:9000;
-            fastcgi_param SCRIPT_FILENAME /var/www/html/api/$1;
-            fastcgi_param SCRIPT_NAME /pt_api/$1;
         }
     }
 
@@ -112,7 +122,7 @@ pnpm dev # 启动开发服务器
 - default 为内置一栏主题
 - peachtrees-two-column 为内置两栏主题
 
-## 命令行导出静态网站
+## 支持命令行导出静态网站
 
 本地安装好后，命令行进入项目根目录 `PeachtreesCMS/`，运行 Node 导出命令如下：
 

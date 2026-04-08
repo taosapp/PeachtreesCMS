@@ -3,6 +3,11 @@
  * PeachtreesCMS API - Delete Media File
  * DELETE /api/media/delete.php
  * Requires admin privileges
+ * 
+ * Security notes:
+ * - Only admins can delete files (requireAdmin)
+ * - Path traversal protection via realpath() validation
+ * - Can only delete files within media directory
  */
 
 require_once __DIR__ . '/../cors.php';
