@@ -4,7 +4,7 @@ import { useLanguage } from '../../contexts/LanguageContext'
 
 export default function Data() {
   const { lang } = useLanguage()
-  const apiBase = import.meta.env.VITE_API_BASE_URL || '/pt_api/'
+  const apiBase = import.meta.env.VITE_API_BASE_URL
   const apiUrl = (path) => `${apiBase.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
   const [selectedFile, setSelectedFile] = useState(null)
   const [importing, setImporting] = useState(false)

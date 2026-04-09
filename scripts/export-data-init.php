@@ -6,7 +6,7 @@
 
 ini_set('display_errors', '0');
 
-require_once __DIR__ . '/../api/config.php';
+require_once __DIR__ . '/../pt_api/config.php';
 
 $pdo = getDB();
 $dbName = DB_NAME;

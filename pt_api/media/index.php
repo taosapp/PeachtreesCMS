@@ -46,7 +46,7 @@ foreach ($iterator as $file) {
 
     $files[] = [
         'path' => 'pt_upload/' . $relativePath,
-        'url' => rtrim(UPLOAD_URL, '/') . '/' . $relativePath,
+        'url' => UPLOAD_URL . $relativePath,
         'type' => $type,
         'size' => $file->getSize(),
         'modified_at' => date('Y-m-d H:i:s', $file->getMTime())

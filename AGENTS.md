@@ -5,12 +5,12 @@
 - Do not use `npm` or `yarn` for normal project workflows.
 
 ## Backend API Layout
-- Place backend API files under `api/`.
-- Follow the pattern `api/{module}/{action}.php`.
+- Place backend API files under `pt_api/`.
+- Follow the pattern `pt_api/{module}/{action}.php`.
 - Examples:
-- `api/posts/index.php`
-- `api/auth/login.php`
-- `api/tags/create.php`
+- `pt_api/posts/index.php`
+- `pt_api/auth/login.php`
+- `pt_api/tags/create.php`
 
 ## Frontend Component Layout
 - React shared components live under `src/components/{ComponentName}/index.jsx`.
@@ -21,13 +21,13 @@
 - Admin pages live under `src/pages/admin/{PageName}.jsx`.
 
 ## API Response Format
-- Backend APIs must return JSON through helpers from `api/response.php`.
+- Backend APIs must return JSON through helpers from `pt_api/response.php`.
 - Use the project response helpers such as `success(...)` and `error(...)`.
 - Do not hand-roll JSON responses when a shared helper already exists.
 
 ## Authentication
 - Any protected PHP endpoint must require authentication near the top of the file.
-- Use `requireAuth()` or `requireAdmin()` from `api/auth.php` as appropriate.
+- Use `requireAuth()` or `requireAdmin()` from `pt_api/auth.php` as appropriate.
 - Do not manually duplicate session auth checks unless there is a strong reason.
 
 ## Database Access

@@ -49,7 +49,8 @@ try {
         'site_title' => $options['site_title'] ?? 'PeachtreesCMS',
         'footer_text' => $options['footer_text'] ?? '',
         'lang' => ($options['default_lang'] ?? 'zh-CN') === 'en-US' ? 'en' : 'zh-CN',
-        'site_url' => $options['site_url'] ?? ''
+        'site_url' => $options['site_url'] ?? '',
+        'show_logo' => ($options['show_logo'] ?? '0') === '1'
     ];
 
     $hasUserLayout = false;

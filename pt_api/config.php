@@ -113,7 +113,26 @@ if (!empty($uploadDir)) {
     $uploadDir = __DIR__ . '/../pt_upload/';
 }
 define('UPLOAD_DIR', $uploadDir);
-define('UPLOAD_URL', '/pt_upload/');  // URL access path is fixed
+
+// Upload URL configuration
+// For shared hosting in subdirectory, set UPLOAD_URL_BASE environment variable
+// Example: /PeachtreesCMS/pt_upload/
+$uploadUrlBase = $_ENV['UPLOAD_URL_BASE'] ?? '';
+if (!empty($uploadUrlBase)) {
+    // Use custom URL base from environment
+    define('UPLOAD_URL', rtrim($uploadUrlBase, '/') . '/');
+} else {
+    // Default: try to detect from request
+    $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
+    // Remove /pt_api/... from path to get base directory
+    // Example: /PeachtreesCMS/pt_api/media => /PeachtreesCMS
+    $baseDir = preg_replace('#/pt_api(/.*)?$#i', '', $scriptDir);
+    if ($baseDir === '' || $baseDir === '/') {
+        define('UPLOAD_URL', '/pt_upload/');
+    } else {
+        define('UPLOAD_URL', rtrim($baseDir, '/') . '/pt_upload/');
+    }
+}
 
 // Create PDO connection
 function getDB(): PDO {

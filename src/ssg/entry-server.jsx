@@ -70,7 +70,7 @@ export function renderHomePage({
   const layoutTemplate = layout?.home?.template || 'single-column'
   const sidebarPosition = layout?.home?.columns?.sidebar || 'left'
 
-  const header = <StaticHeader siteTitle={siteOptions.site_title} prefix={prefix} />
+  const header = <StaticHeader siteTitle={siteOptions.site_title} prefix={prefix} siteOptions={siteOptions} />
   const tags = <StaticTags tagMap={tagMap} prefix={prefix} layoutTemplate={layoutTemplate} />
   const footer = <StaticFooter footerHtml={siteOptions.footer_text || `© ${new Date().getFullYear()} ${siteOptions.site_title}`} />
 
@@ -134,7 +134,7 @@ export function renderPostPage({
   const layoutTemplate = layout?.post?.template || 'single-column'
   const sidebarPosition = layout?.post?.columns?.sidebar || 'left'
 
-  const header = <StaticHeader siteTitle={siteOptions.site_title} prefix={prefix} />
+  const header = <StaticHeader siteTitle={siteOptions.site_title} prefix={prefix} siteOptions={siteOptions} />
   const tags = <StaticTags tagMap={tagMap} prefix={prefix} layoutTemplate={layoutTemplate} />
   const footer = <StaticFooter footerHtml={siteOptions.footer_text || `© ${new Date().getFullYear()} ${siteOptions.site_title}`} />
 

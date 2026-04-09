@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl *)",
+      "Bash(nginx *)",
+      "Bash(netstat *)",
+      "Bash(findstr *)"
+    ]
+  },
+  "$version": 3
+}

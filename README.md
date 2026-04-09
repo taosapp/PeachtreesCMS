@@ -48,7 +48,7 @@
 
 ```markdown
 /var/www/html/                    # Nginx 根目录
-├── api/                          # PHP api 目录
+├── pt_api/                       # PHP api 目录
 ├── index.html                    # 前端入口
 ├── admin.html                    # 后台入口
 ├── assets/                       # 静态资源
@@ -100,7 +100,7 @@ http {
 
 ### 3. 运行安装程序
 
-- 运行 http://your-domain.com/api/install.php
+- 运行 http://your-domain.com/pt_api/install.php
 
 
 ## 开发指南

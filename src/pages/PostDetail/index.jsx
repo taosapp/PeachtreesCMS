@@ -83,7 +83,7 @@ export default function PostDetail() {
   }
 
   const refreshCaptcha = () => {
-    const apiBase = import.meta.env.VITE_API_BASE_URL || '/pt_api/'
+    const apiBase = import.meta.env.VITE_API_BASE_URL
     const base = apiBase.replace(/\/$/, '')
     setCaptchaUrl(`${base}/captcha.php?t=${Date.now()}`)
   }
