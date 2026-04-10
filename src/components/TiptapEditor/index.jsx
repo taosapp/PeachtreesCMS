@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Node, mergeAttributes } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
@@ -6,6 +6,7 @@ import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { mediaAPI } from '../../services/api'
 
 const Video = Node.create({
   name: 'video',
@@ -70,7 +71,17 @@ export default function TiptapEditor({ value, onChange, onUploadImage, onUploadV
   const videoInputRef = useRef(null)
   const audioInputRef = useRef(null)
   const [uploadingMedia, setUploadingMedia] = useState(false)
+  const [showSource, setShowSource] = useState(false)
+  const [sourceCode, setSourceCode] = useState(value || '')
+  const [showMediaModal, setShowMediaModal] = useState(false)
+  const [mediaType, setMediaType] = useState('image')
+  const [mediaFiles, setMediaFiles] = useState([])
+  const [mediaLoading, setMediaLoading] = useState(false)
+  const [mediaUploading, setMediaUploading] = useState(false)
+  const [mediaPage, setMediaPage] = useState(1)
   const { lang } = useLanguage()
+
+  const mediaPerPage = 50
 
   const editor = useEditor({
     extensions: [
@@ -112,6 +123,34 @@ export default function TiptapEditor({ value, onChange, onUploadImage, onUploadV
       editor.commands.setContent(nextValue, false)
     }
   }, [editor, value])
+
+  useEffect(() => {
+    if (showSource) {
+      setSourceCode(value || '')
+    }
+  }, [showSource, value])
+
+  useEffect(() => {
+    if (!showMediaModal) return
+    const loadMedia = async () => {
+      setMediaLoading(true)
+      try {
+        const res = await mediaAPI.getList()
+        if (res.success) {
+          setMediaFiles(res.data.files || [])
+        }
+      } finally {
+        setMediaLoading(false)
+      }
+    }
+    loadMedia()
+  }, [showMediaModal])
+
+  useEffect(() => {
+    if (showMediaModal) {
+      setMediaPage(1)
+    }
+  }, [mediaType, showMediaModal])
 
   if (!editor) return null
 
@@ -158,6 +197,61 @@ export default function TiptapEditor({ value, onChange, onUploadImage, onUploadV
       .setLink({ href: url, target: '_blank', rel: 'noopener noreferrer' })
       .run()
   }
+
+  const handleSourceSave = () => {
+    editor.commands.setContent(sourceCode, false)
+    onChange(sourceCode)
+    setShowSource(false)
+  }
+
+  const openMediaModal = (type) => {
+    setMediaType(type)
+    setShowMediaModal(true)
+  }
+
+  const insertMedia = (url) => {
+    if (!url) return
+    if (mediaType === 'image') {
+      editor.chain().focus().setImage({ src: url }).run()
+    } else if (mediaType === 'video') {
+      editor.chain().focus().insertContent({ type: 'video', attrs: { src: url } }).run()
+    } else if (mediaType === 'audio') {
+      editor.chain().focus().insertContent({ type: 'audio', attrs: { src: url } }).run()
+    }
+    setShowMediaModal(false)
+  }
+
+  const handleModalUpload = async (event) => {
+    const files = Array.from(event.target.files || [])
+    if (files.length === 0) return
+    setMediaUploading(true)
+    try {
+      const formData = new FormData()
+      files.forEach((file) => formData.append('files[]', file))
+      await mediaAPI.upload(formData)
+      const res = await mediaAPI.getList()
+      if (res.success) {
+        setMediaFiles(res.data.files || [])
+        setMediaPage(1)
+      }
+    } catch (err) {
+      alert(err.message || lang('uploadFailed'))
+    } finally {
+      setMediaUploading(false)
+      event.target.value = ''
+    }
+  }
+
+  const modalFiles = useMemo(() => {
+    const list = mediaFiles.filter((file) => file.type === mediaType)
+    const start = (mediaPage - 1) * mediaPerPage
+    return {
+      total: list.length,
+      items: list.slice(start, start + mediaPerPage)
+    }
+  }, [mediaFiles, mediaType, mediaPage])
+
+  const totalPages = Math.max(1, Math.ceil(modalFiles.total / mediaPerPage))
 
   return (
     <div className="tiptap-editor card border-0 shadow-sm">
@@ -242,19 +336,19 @@ export default function TiptapEditor({ value, onChange, onUploadImage, onUploadV
         <ToolbarButton
           icon="bi-image"
           label={lang('editorAddImage')}
-          onClick={handleImageSelect}
+          onClick={() => openMediaModal('image')}
           disabled={uploadingMedia || !onUploadImage}
         />
         <ToolbarButton
           icon="bi-film"
           label={lang('editorAddVideo')}
-          onClick={() => videoInputRef.current?.click()}
+          onClick={() => openMediaModal('video')}
           disabled={uploadingMedia || !onUploadVideo}
         />
         <ToolbarButton
           icon="bi-music-note-beamed"
           label={lang('editorAddAudio')}
-          onClick={() => audioInputRef.current?.click()}
+          onClick={() => openMediaModal('audio')}
           disabled={uploadingMedia || !onUploadAudio}
         />
         <ToolbarButton
@@ -267,31 +361,126 @@ export default function TiptapEditor({ value, onChange, onUploadImage, onUploadV
           label={lang('editorRedo')}
           onClick={() => editor.chain().focus().redo().run()}
         />
+        <ToolbarButton
+          icon="bi-filetype-html"
+          label={lang('editorSourceCode')}
+          active={showSource}
+          onClick={() => setShowSource(!showSource)}
+        />
       </div>
       <div className="card-body p-0">
-        <input
-          ref={imageInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          style={{ display: 'none' }}
-          onChange={(event) => handleUpload(event, onUploadImage, (url) => editor.chain().focus().setImage({ src: url }).run())}
-        />
-        <input
-          ref={videoInputRef}
-          type="file"
-          accept="video/mp4"
-          style={{ display: 'none' }}
-          onChange={(event) => handleUpload(event, onUploadVideo, (url) => editor.chain().focus().insertContent({ type: 'video', attrs: { src: url } }).run())}
-        />
-        <input
-          ref={audioInputRef}
-          type="file"
-          accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,audio/mp4,audio/aac"
-          style={{ display: 'none' }}
-          onChange={(event) => handleUpload(event, onUploadAudio, (url) => editor.chain().focus().insertContent({ type: 'audio', attrs: { src: url } }).run())}
-        />
-        <EditorContent editor={editor} />
+        {showSource ? (
+          <div className="p-3">
+            <textarea
+              className="form-control font-monospace"
+              rows="8"
+              value={sourceCode}
+              onChange={(e) => setSourceCode(e.target.value)}
+              style={{ fontSize: '0.875rem' }}
+            />
+            <div className="mt-2 d-flex gap-2">
+              <button
+                type="button"
+                className="btn btn-sm btn-primary"
+                onClick={handleSourceSave}
+              >
+                <i className="bi bi-check-lg me-1"></i>
+                {lang('apply')}
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setShowSource(false)}
+              >
+                <i className="bi bi-x-lg me-1"></i>
+                {lang('cancel')}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <EditorContent editor={editor} />
+        )}
       </div>
+      {showMediaModal && (
+        <div className="media-modal-backdrop">
+          <div className="media-modal">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="mb-0">{lang('mediaSelect')}</h5>
+              <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setShowMediaModal(false)}>
+                <i className="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <div className="d-flex align-items-center gap-2 mb-3">
+              <label className="btn btn-primary btn-sm mb-0">
+                <i className="bi bi-upload me-1"></i>
+                {mediaUploading ? lang('uploading') : lang('mediaUpload')}
+                <input
+                  type="file"
+                  multiple
+                  accept={mediaType === 'image' ? 'image/*' : mediaType === 'video' ? 'video/*' : 'audio/*'}
+                  className="d-none"
+                  onChange={handleModalUpload}
+                  disabled={mediaUploading}
+                />
+              </label>
+              <span className="text-muted small">{lang('mediaUploadHint')}</span>
+            </div>
+
+            {mediaLoading ? (
+              <div className="text-muted">{lang('loading')}</div>
+            ) : modalFiles.total === 0 ? (
+              <div className="text-muted">{lang('mediaEmpty')}</div>
+            ) : (
+              <>
+                <div className="media-grid">
+                  {modalFiles.items.map((file) => (
+                    <div className="card h-100 shadow-sm" key={file.path}>
+                      <div className="media-preview">
+                        {file.type === 'image' && <img src={file.url} alt={file.path} className="media-thumb" />}
+                        {file.type === 'video' && <video className="media-thumb" controls src={file.url} />}
+                        {file.type === 'audio' && <audio className="media-audio" controls src={file.url} />}
+                      </div>
+                      <div className="card-body">
+                        <div className="text-break small mb-2">{file.path}</div>
+                        <button className="btn btn-sm btn-outline-primary" onClick={() => insertMedia(file.url)}>
+                          <i className="bi bi-check2 me-1"></i>
+                          {lang('mediaInsert')}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {totalPages > 1 && (
+                  <nav className="mt-3">
+                    <ul className="pagination pagination-sm mb-0">
+                      <li className={`page-item ${mediaPage <= 1 ? 'disabled' : ''}`}>
+                        <button className="page-link" onClick={() => setMediaPage(mediaPage - 1)} disabled={mediaPage <= 1}>
+                          {lang('prev')}
+                        </button>
+                      </li>
+                      {Array.from({ length: totalPages }).map((_, idx) => {
+                        const pageNum = idx + 1
+                        return (
+                          <li className={`page-item ${pageNum === mediaPage ? 'active' : ''}`} key={pageNum}>
+                            <button className="page-link" onClick={() => setMediaPage(pageNum)}>
+                              {pageNum}
+                            </button>
+                          </li>
+                        )
+                      })}
+                      <li className={`page-item ${mediaPage >= totalPages ? 'disabled' : ''}`}>
+                        <button className="page-link" onClick={() => setMediaPage(mediaPage + 1)} disabled={mediaPage >= totalPages}>
+                          {lang('next')}
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

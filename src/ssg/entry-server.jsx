@@ -138,6 +138,9 @@ export function renderPostPage({
   const tags = <StaticTags tagMap={tagMap} prefix={prefix} layoutTemplate={layoutTemplate} />
   const footer = <StaticFooter footerHtml={siteOptions.footer_text || `© ${new Date().getFullYear()} ${siteOptions.site_title}`} />
 
+  // Add pattern CSS if post has a pattern
+  const patternCssHref = post.page_pattern ? `${prefix}pattern/${post.page_pattern}/style.css` : null
+
   const isBigPicture = post.post_type === 'big-picture'
   const coverMedia = Array.isArray(post.cover_media) ? post.cover_media : []
   const renderCoverMedia = (path, idx) => {
@@ -250,5 +253,8 @@ export function renderPostPage({
     </>
   ) : body
 
-  return wrapDocument({ lang: labels.lang, title, themeHref, body: bodyWithCover, extraCss, extraJs, extraInlineScripts })
+  // Add pattern CSS to extraCss
+  const allExtraCss = patternCssHref ? [...extraCss, patternCssHref] : extraCss
+
+  return wrapDocument({ lang: labels.lang, title, themeHref, body: bodyWithCover, extraCss: allExtraCss, extraJs, extraInlineScripts })
 }

@@ -1,0 +1,5 @@
+/* Pattern 01 - Classic Blue */
+body {
+  background-image: url("./bg.svg");
+  background-repeat: repeat;
+}

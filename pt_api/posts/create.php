@@ -26,6 +26,7 @@ $tag = trim($input['tag'] ?? '');
 $postType = trim($input['post_type'] ?? 'normal');
 $summary = trim($input['summary'] ?? '');
 $coverMedia = $input['cover_media'] ?? [];
+$pagePattern = trim($input['page_pattern'] ?? '');
 $content = $input['content'] ?? '';
 $allowComments = isset($input['allow_comments']) ? intval($input['allow_comments']) : 1;
 
@@ -79,11 +80,12 @@ if ($postType === 'big-picture' && count($coverMedia) === 0) {
     }
     
     // Insert post
-    $sql = "INSERT INTO pt_posts (tag, post_type, title, slug, summary, cover_media, content, allow_comments, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())";
+    $sql = "INSERT INTO pt_posts (tag, post_type, page_pattern, title, slug, summary, cover_media, content, allow_comments, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         $tag,
         $postType,
+        $pagePattern !== '' ? $pagePattern : null,
         $title,
         !empty($slug) ? $slug : null,
         $summary,

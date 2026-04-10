@@ -30,6 +30,8 @@ if (!is_string($path) || trim($path) === '') {
 $path = ltrim(trim($path), '/');
 if (str_starts_with($path, 'pt_upload/')) {
     $path = substr($path, 10);
+} elseif (str_starts_with($path, 'upload/')) {
+    $path = substr($path, 7);
 }
 
 if (!str_starts_with($path, 'media/')) {
@@ -65,5 +67,5 @@ while ($mediaRoot && strpos($currentDir, $mediaRoot) === 0 && $currentDir !== $m
 }
 
 success([
-    'path' => 'pt_upload/' . str_replace('\\', '/', $path)
+    'path' => '/pt_upload/' . str_replace('\\', '/', $path)
 ], 'Deleted successfully');

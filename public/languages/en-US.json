@@ -198,6 +198,8 @@
     "editorUndo": "Undo",
     "editorRedo": "Redo",
     "editorSourceCode": "Source Code",
+    "mediaSelect": "Select Media",
+    "mediaInsert": "Insert",
     "plugins": "Plugins",
     "pluginNotFound": "Plugin not found",
     "pluginSlug": "Plugin Slug",

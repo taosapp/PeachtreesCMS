@@ -19,17 +19,17 @@ Thumbs.db
 npm-debug.log*
 
 # Upload files (optional, uncomment if needed)
-upload/*
+pt_upload/*
 
 # plan
 .plan
 
 
 # sessions
-api/sessions/*
+pt_api/sessions/*
 
 # Rate limit data
-api/rate_limits/*
+pt_api/rate_limits/*
 
 # Installation lock file
-api/.installed
+pt_api/.installed

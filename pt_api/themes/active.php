@@ -17,7 +17,7 @@ try {
     $pdo = getDB();
     scanThemePackages($pdo);
 
-    $stmt = $pdo->query("SELECT id, slug, name, description, version, author, entry_css, user_layout_config, updated_at FROM pt_themes WHERE is_active = 1 LIMIT 1");
+    $stmt = $pdo->query("SELECT id, slug, name, description, version, author, entry_css, updated_at FROM pt_themes WHERE is_active = 1 LIMIT 1");
     $theme = $stmt ? $stmt->fetch() : null;
 
     if (!$theme) {
@@ -26,9 +26,6 @@ try {
 
     $versionToken = rawurlencode($theme['updated_at'] ?? date('Y-m-d H:i:s'));
     $theme['css_url'] = themePublicCssUrl($theme['slug'], $theme['entry_css']) . '?v=' . $versionToken;
-    $userLayoutConfig = json_decode($theme['user_layout_config'] ?? 'null', true);
-    $theme['layout'] = loadThemeLayout($theme['slug'], $userLayoutConfig);
-
     success($theme, 'Active theme retrieved successfully');
 } catch (PDOException $e) {
     serverError('Failed to get active theme: ' . $e->getMessage());

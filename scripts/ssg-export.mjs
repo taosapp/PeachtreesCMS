@@ -141,7 +141,17 @@ async function main() {
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
   const siteOptions = payload.siteOptions || {}
   const theme = payload.theme || { slug: 'default', entry_css: 'style.css' }
-  const layout = payload.layout || {}
+  const buildLayoutFromTheme = (slug) => {
+    const template = slug === 'peachtrees-two-column' ? 'two-column' : 'single-column'
+    return {
+      home: { template, columns: { sidebar: 'left' } },
+      post: { template, columns: { sidebar: 'left' } }
+    }
+  }
+
+  const layout = payload.layout && payload.layout.home
+    ? payload.layout
+    : buildLayoutFromTheme(theme.slug)
   const postsRaw = Array.isArray(payload.posts) ? payload.posts : []
   const tags = Array.isArray(payload.tags) ? payload.tags : []
 
@@ -178,6 +188,11 @@ async function main() {
   const themeSrc = path.join(root, 'public', 'theme', theme.slug)
   const themeDest = path.join(outDir, 'theme', theme.slug)
   await copyDir(themeSrc, themeDest, { skip: new Set(['theme.json', 'thumbnail.svg']) })
+
+  // Copy pattern files
+  const patternSrc = path.join(root, 'public', 'pattern')
+  const patternDest = path.join(outDir, 'pattern')
+  await copyDir(patternSrc, patternDest)
 
   const uploadSrc = path.join(root, 'upload')
   const uploadDest = path.join(outDir, 'upload')

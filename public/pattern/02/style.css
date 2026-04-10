@@ -1,0 +1,26 @@
+/* Pattern 02 - Warm Sunset */
+.article-detail {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+  color: #ffffff !important;
+  background-image: url('/pattern/02/pattern-bg-02.png') !important;
+  background-repeat: repeat !important;
+  background-blend-mode: overlay !important;
+}
+
+.article-detail h1,
+.article-detail h2,
+.article-detail h3,
+.article-detail h4,
+.article-detail h5,
+.article-detail h6 {
+  color: #ffffff !important;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.3) !important;
+}
+
+.article-detail a {
+  color: #fff3e0 !important;
+}
+
+.article-meta {
+  color: #ffe0b2 !important;
+}

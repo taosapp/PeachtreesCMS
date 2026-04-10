@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-// 从环境变量获取 API 基础 URL，默认为 /api
+// 从环境变量获取 API 基础 URL
 const baseURL = import.meta.env.VITE_API_BASE_URL
 
 const api = axios.create({

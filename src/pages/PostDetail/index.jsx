@@ -68,6 +68,28 @@ export default function PostDetail() {
     }
   }
 
+  // 动态加载页面 pattern CSS
+  useEffect(() => {
+    // 移除旧的 pattern CSS
+    const existing = document.getElementById('page-pattern-css')
+    if (existing) existing.remove()
+
+    // 添加新的 pattern CSS
+    if (post?.page_pattern) {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = `/pattern/${post.page_pattern}/style.css`
+      link.id = 'page-pattern-css'
+      document.head.appendChild(link)
+    }
+
+    // 清理函数：离开页面时移除 pattern CSS
+    return () => {
+      const el = document.getElementById('page-pattern-css')
+      if (el) el.remove()
+    }
+  }, [post])
+
   const loadComments = async (postId) => {
     setCommentsLoading(true)
     try {

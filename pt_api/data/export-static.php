@@ -53,44 +53,13 @@ try {
         'show_logo' => ($options['show_logo'] ?? '0') === '1'
     ];
 
-    $hasUserLayout = false;
-    $columnStmt = $pdo->query("SHOW COLUMNS FROM pt_themes LIKE 'user_layout_config'");
-    if ($columnStmt && $columnStmt->fetch()) {
-        $hasUserLayout = true;
-    }
-
-    $themeSql = $hasUserLayout
-        ? "SELECT slug, entry_css, user_layout_config FROM pt_themes WHERE is_active = 1 LIMIT 1"
-        : "SELECT slug, entry_css FROM pt_themes WHERE is_active = 1 LIMIT 1";
-    $themeStmt = $pdo->query($themeSql);
+    $themeStmt = $pdo->query("SELECT slug, entry_css FROM pt_themes WHERE is_active = 1 LIMIT 1");
     $theme = $themeStmt ? $themeStmt->fetch() : null;
     $themeSlug = $theme['slug'] ?? 'default';
     $themeCss = $theme['entry_css'] ?? 'style.css';
 
-    $userLayoutConfig = null;
-    if ($hasUserLayout && is_array($theme) && array_key_exists('user_layout_config', $theme) && !empty($theme['user_layout_config'])) {
-        $decoded = json_decode($theme['user_layout_config'], true);
-        if (is_array($decoded)) {
-            $userLayoutConfig = $decoded;
-        }
-    }
-    $layoutConfig = loadThemeLayout($themeSlug, $userLayoutConfig);
-
-    $resolveSidebar = function (array $pageLayout): string {
-        if (!empty($pageLayout['columns']['sidebar'])) {
-            return $pageLayout['columns']['sidebar'] === 'right' ? 'right' : 'left';
-        }
-        if (!empty($pageLayout['right_sidebar_blocks'])) {
-            return 'right';
-        }
-        return 'left';
-    };
-
-    $layoutConfig['home']['columns']['sidebar'] = $resolveSidebar($layoutConfig['home'] ?? []) ?: 'left';
-    $layoutConfig['post']['columns']['sidebar'] = $resolveSidebar($layoutConfig['post'] ?? []) ?: 'left';
-
     $postsStmt = $pdo->query(<<<SQL
-        SELECT p.id, p.tag, p.post_type, p.title, p.slug, p.summary, p.cover_media, p.content, p.created_at, p.updated_at, t.display_name
+        SELECT p.id, p.tag, p.post_type, p.page_pattern, p.title, p.slug, p.summary, p.cover_media, p.content, p.created_at, p.updated_at, t.display_name
         FROM pt_posts p
         LEFT JOIN pt_tags t ON t.tag = p.tag
         WHERE p.active = 1
@@ -127,7 +96,6 @@ SQL);
             'slug' => $themeSlug,
             'entry_css' => $themeCss
         ],
-        'layout' => $layoutConfig,
         'posts' => $posts,
         'tags' => $tags
     ];

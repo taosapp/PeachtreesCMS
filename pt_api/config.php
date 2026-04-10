@@ -103,16 +103,36 @@ ini_set('output_handler', '');
 ini_set('zlib.output_compression', '0');
 
 // Upload directory configuration (read from .env, supports user customization)
+// Supports absolute or relative paths (relative to project root).
 $uploadDir = $_ENV['UPLOAD_DIR'] ?? '';
+$projectRoot = realpath(__DIR__ . '/..') ?: (__DIR__ . '/..');
 
 if (!empty($uploadDir)) {
-    // User defined upload directory, ensure it ends with slash
-    $uploadDir = rtrim($uploadDir, '/\\') . '/';
+    $uploadDir = rtrim($uploadDir, '/\\');
+    // Resolve relative path against project root
+    if (!preg_match('/^(\/|[a-zA-Z]:[\/\\\\])/', $uploadDir)) {
+        $uploadDir = $projectRoot . '/' . $uploadDir;
+    }
+    $uploadDir .= '/';
 } else {
     // Default path: use pt_upload/ under project root
-    $uploadDir = __DIR__ . '/../pt_upload/';
+    $uploadDir = $projectRoot . '/pt_upload/';
 }
 define('UPLOAD_DIR', $uploadDir);
+
+// Theme directory configuration (read from .env, fallback to /theme under project root)
+// Supports absolute or relative paths (relative to project root).
+$themeDir = $_ENV['THEME_DIR'] ?? '';
+if (!empty($themeDir)) {
+    $themeDir = rtrim($themeDir, '/\\');
+    // Resolve relative path against project root
+    if (!preg_match('/^(\/|[a-zA-Z]:[\/\\\\])/', $themeDir)) {
+        $themeDir = $projectRoot . '/' . $themeDir;
+    }
+} else {
+    $themeDir = $projectRoot . '/theme';
+}
+define('THEME_DIR', $themeDir);
 
 // Upload URL configuration
 // For shared hosting in subdirectory, set UPLOAD_URL_BASE environment variable

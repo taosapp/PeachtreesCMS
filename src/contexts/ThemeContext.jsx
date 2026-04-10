@@ -6,22 +6,22 @@ const THEME_LINK_ID = 'pt-theme-style'
 const defaultLayout = {
   home: {
     template: 'single-column',
-    header: 'top',
-    category: 'header',
-    footer: 'bottom',
-    left_sidebar_blocks: [],
-    main_blocks: ['header', 'category', 'post_list', 'pager', 'footer'],
-    right_sidebar_blocks: []
+    columns: { sidebar: 'left' }
   },
   post: {
     template: 'single-column',
-    header: 'top',
-    category: 'header',
-    footer: 'bottom',
-    left_sidebar_blocks: [],
-    main_blocks: ['header', 'category', 'post_content', 'navigation', 'comments', 'back_link', 'footer'],
-    right_sidebar_blocks: []
+    columns: { sidebar: 'left' }
   }
+}
+
+const layoutForTheme = (theme) => {
+  if (theme?.slug === 'peachtrees-two-column') {
+    return {
+      home: { template: 'two-column', columns: { sidebar: 'left' } },
+      post: { template: 'two-column', columns: { sidebar: 'left' } }
+    }
+  }
+  return defaultLayout
 }
 
 const ThemeContext = createContext(null)
@@ -47,8 +47,7 @@ export function ThemeProvider({ children }) {
 
         if (themeRes.success && themeRes.data) {
           const nextTheme = {
-            ...themeRes.data,
-            layout: themeRes.data.layout || defaultLayout
+            ...themeRes.data
           }
           setTheme(nextTheme)
         }
@@ -133,7 +132,7 @@ export function ThemeProvider({ children }) {
   const value = useMemo(() => ({
     theme,
     loading,
-    layout: theme?.layout || defaultLayout,
+    layout: layoutForTheme(theme),
     siteOptions,
     refetchSettings
   }), [theme, loading, siteOptions])

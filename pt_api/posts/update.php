@@ -26,6 +26,7 @@ $tag = trim($input['tag'] ?? '');
 $postType = trim($input['post_type'] ?? 'normal');
 $summary = trim($input['summary'] ?? '');
 $coverMedia = $input['cover_media'] ?? [];
+$pagePattern = isset($input['page_pattern']) ? trim($input['page_pattern']) : null;
 $content = $input['content'] ?? '';
 $allowComments = isset($input['allow_comments']) ? intval($input['allow_comments']) : null;
 
@@ -129,11 +130,12 @@ try {
     // Otherwise, user set a new slug value, use the new value
 
     // Update post
-    $sql = "UPDATE pt_posts SET tag = ?, post_type = ?, title = ?, slug = ?, summary = ?, cover_media = ?, content = ?, allow_comments = ?, updated_at = NOW() WHERE id = ?";
+    $sql = "UPDATE pt_posts SET tag = ?, post_type = ?, page_pattern = ?, title = ?, slug = ?, summary = ?, cover_media = ?, content = ?, allow_comments = ?, updated_at = NOW() WHERE id = ?";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         $tag,
         $postType,
+        $pagePattern !== null ? $pagePattern : null,
         $title,
         $slug,
         $summary,

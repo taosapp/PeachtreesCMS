@@ -122,20 +122,44 @@ pnpm dev # 启动开发服务器
 - default 为内置一栏主题
 - peachtrees-two-column 为内置两栏主题
 
-## 支持命令行导出静态网站
+## 命令行工具
 
-本地安装好后，命令行进入项目根目录 `PeachtreesCMS/`，运行 Node 导出命令如下：
+项目 `scripts/` 目录下提供两个实用脚本：
 
+### 1. 静态网站导出 (`ssg-export.mjs`)
+
+将动态网站导出为纯静态 HTML 文件，可直接部署到任意静态服务器。
+
+**通过后台界面导出（推荐）：**
+- 登录后台 → 数据管理 → 导出静态网站
+
+**通过命令行导出：**
 ```bash
 node scripts/ssg-export.mjs --data static_html/.export_payload.json --out static_html --status static_html/.export_status.json
 ```
 
-然后上传 `static_html` 目录下所有文件即可。
+导出后上传 `static_html/` 目录下所有文件即可。
 
 说明：
-- `static_html/.export_payload.json` 会在点击后台“导出静态网站”时由 API 自动生成。
-- `static_html/.export_payload.json` 是导出时由 API 临时生成的文件，导出结束后会被删除。
-- 该命令会覆盖并重新生成 `static_html/`。
+- `.export_payload.json` 会在点击后台"导出静态网站"时由 API 自动生成
+- 该文件是导出时由 API 临时生成的，导出结束后会被删除
+- 该命令会覆盖并重新生成 `static_html/`
+
+### 2. 数据库初始化文件导出 (`export-data-init.php`)
+
+将当前数据库结构和数据导出为 `data-init.sql` 文件，用于新环境的初始化。
+
+**使用方法：**
+```bash
+php scripts/export-data-init.php
+```
+
+执行后会在项目根目录生成 `data-init.sql` 文件。
+
+**使用场景：**
+- 开发环境数据库结构变更后，重新生成初始化文件
+- 备份当前数据库结构用于新环境部署
+- 版本发布时包含最新的数据结构
 
 ---
 This project uses a custom non-commercial license. See LICENSE file for details.

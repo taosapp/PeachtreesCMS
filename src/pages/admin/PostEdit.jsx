@@ -21,6 +21,7 @@ export default function PostEdit({ forcedPostType = null }) {
   const [loading, setLoading] = useState(false)
   const [uploadingCover, setUploadingCover] = useState(false)
   const [tags, setTags] = useState([])
+  const [patterns, setPatterns] = useState([])
   const [form, setForm] = useState({
     post_type: forcedPostType || 'normal',
     title: '',
@@ -28,6 +29,7 @@ export default function PostEdit({ forcedPostType = null }) {
     tag: '',
     summary: '',
     cover_media: [],
+    page_pattern: '',
     content: '',
     allow_comments: true
   })
@@ -37,10 +39,23 @@ export default function PostEdit({ forcedPostType = null }) {
 
   useEffect(() => {
     loadTags()
+    loadPatterns()
     if (isEdit) {
       loadPost()
     }
   }, [id])
+
+  const loadPatterns = async () => {
+    try {
+      const res = await fetch('/pt_api/patterns/index.php')
+      const data = await res.json()
+      if (data.success) {
+        setPatterns(data.data.patterns || [])
+      }
+    } catch (err) {
+      console.error('Failed to load patterns:', err)
+    }
+  }
 
   useEffect(() => {
     if (!isEdit && forcedPostType) {
@@ -74,6 +89,7 @@ export default function PostEdit({ forcedPostType = null }) {
           tag: res.data.tag,
           summary: res.data.summary || '',
           cover_media: Array.isArray(res.data.cover_media) ? res.data.cover_media : [],
+          page_pattern: res.data.page_pattern || '',
           content: res.data.content,
           allow_comments: res.data.allow_comments === 1
         })
@@ -347,6 +363,33 @@ export default function PostEdit({ forcedPostType = null }) {
                       </label>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {patterns.length > 0 && (
+                <div className="mb-3">
+                  <label className="form-label">
+                    <i className="bi bi-palette me-1"></i>
+                    {lang('pagePattern')}
+                  </label>
+                  <select
+                    name="page_pattern"
+                    className="form-select"
+                    value={form.page_pattern}
+                    onChange={handleChange}
+                  >
+                    <option value="">{lang('pagePatternDefault')}</option>
+                    {patterns.map(pattern => (
+                      <option key={pattern.id} value={pattern.id}>
+                        {pattern.name}
+                      </option>
+                    ))}
+                  </select>
+                  {form.page_pattern && (
+                    <small className="text-muted d-block mt-1">
+                      {patterns.find(p => p.id === form.page_pattern)?.description || ''}
+                    </small>
+                  )}
                 </div>
               )}
 

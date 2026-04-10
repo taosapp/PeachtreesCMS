@@ -198,6 +198,8 @@
     "editorUndo": "撤销",
     "editorRedo": "重做",
     "editorSourceCode": "源码",
+    "mediaSelect": "选择媒体",
+    "mediaInsert": "插入",
     "plugins": "插件",
     "pluginNotFound": "未找到该插件",
     "pluginSlug": "插件标识",

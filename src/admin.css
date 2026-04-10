@@ -105,6 +105,25 @@
   grid-template-columns: repeat(10, minmax(0, 1fr));
 }
 
+.media-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.media-modal {
+  background: #fff;
+  border-radius: 10px;
+  width: min(1200px, 92vw);
+  max-height: 85vh;
+  overflow: auto;
+  padding: 20px;
+}
+
 @media (max-width: 1600px) {
   .media-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));

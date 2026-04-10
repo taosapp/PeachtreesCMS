@@ -40,9 +40,8 @@
 - Prefer `useLanguage()` and translated keys over hard-coded strings.
 
 ## Styling
-- Use Bootstrap 5 first for layout and UI patterns.
-- Put project-wide custom styles in `src/index.css` unless an existing file structure clearly suggests otherwise.
-- Avoid custom CSS when a Bootstrap utility or component already fits.
+- Use custom theme style (example: public\theme\default\style.css) for home & posts.
+- Use Bootstrap 5 first for admin page's layout and UI patterns.
 
 ## Admin Route Protection
 - Admin routes should be wrapped with `ProtectedRoute`.
@@ -53,5 +52,8 @@
 - Keep route behavior compatible with `#/path` URLs.
 
 ## Local Environment Assumptions
-- Development is expected to run behind Nginx with working `/api` and `/pt_upload` paths.
+- Development is expected to run behind Nginx with working `/pt_api` and `/pt_upload` paths.
 - Keep Vite proxy and backend path assumptions aligned with that environment.
+
+## Language Convention
+- Comments and message strings should default to English.

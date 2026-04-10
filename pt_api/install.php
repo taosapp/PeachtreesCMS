@@ -48,6 +48,9 @@ function makeEnv(array $config): string {
     $lines[] = '';
     $lines[] = '# Upload directory (optional, leave empty for default)';
     $lines[] = 'UPLOAD_DIR=';
+    $lines[] = '';
+    $lines[] = '# Theme directory (optional, leave empty for /theme under project root)';
+    $lines[] = 'THEME_DIR=';
     return implode(PHP_EOL, $lines) . PHP_EOL;
 }
 
