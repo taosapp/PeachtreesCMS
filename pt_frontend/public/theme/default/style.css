@@ -545,3 +545,7 @@ body {
   font-size: 0.875rem;
   color: #6c757d;
 }
+
+.footer .inner p {
+  margin: 0;
+}
