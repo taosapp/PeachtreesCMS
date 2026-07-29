@@ -1,7 +1,19 @@
 import axios from 'axios'
 
-// 从环境变量获取 API 基础 URL
-const baseURL = import.meta.env.VITE_API_BASE_URL
+// 动态获取 API 基础 URL 的辅助函数
+export const getApiBaseURL = () => {
+  // 1. 如果是本地开发环境 (pnpm dev)，使用环境变量，若无则回退至默认开发路径 '/PeachtreesCMS/pt_api/'
+  if (import.meta.env.DEV) {
+    return import.meta.env.VITE_API_BASE_URL || '/PeachtreesCMS/pt_api/';
+  }
+  
+  // 2. 生产打包环境下，为了实现“一处构建，到处运行”，采用动态路径自适应推导
+  const path = window.location.pathname;
+  const dir = path.substring(0, path.lastIndexOf('/'));
+  return `${dir}/pt_api/`.replace(/\/+/g, '/');
+}
+
+export const baseURL = getApiBaseURL()
 
 const api = axios.create({
   baseURL: baseURL,
@@ -67,6 +79,8 @@ export const usersAPI = {
     api.get('/users/index.php'),
   create: (data) =>
     api.post('/users/create.php', data),
+  update: (data) =>
+    api.put('/users/update.php', data),
   updatePassword: (data) =>
     api.put('/users/update-password.php', data),
   delete: (id) =>

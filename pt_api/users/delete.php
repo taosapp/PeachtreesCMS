@@ -48,9 +48,22 @@ try {
         notFound('User not found');
     }
 
-    // Delete user
-    $deleteStmt = $pdo->prepare("DELETE FROM pt_users WHERE id = ?");
-    $deleteStmt->execute([$id]);
+    // Delete user and handle their posts inside a transaction
+    $pdo->beginTransaction();
+    try {
+        // 1. Unpublish all posts of this user (set active = 0)
+        $updatePostsStmt = $pdo->prepare("UPDATE pt_posts SET active = 0 WHERE user_id = ?");
+        $updatePostsStmt->execute([$id]);
+
+        // 2. Delete the user
+        $deleteStmt = $pdo->prepare("DELETE FROM pt_users WHERE id = ?");
+        $deleteStmt->execute([$id]);
+
+        $pdo->commit();
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
     
     success(null, 'User deleted successfully');
     

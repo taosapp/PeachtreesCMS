@@ -1,0 +1,10 @@
+{
+  "name": "peachtrees-cms-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -C pt_frontend dev",
+    "build:frontend": "pnpm -C pt_frontend build",
+    "package": "node scripts/package.js"
+  }
+}

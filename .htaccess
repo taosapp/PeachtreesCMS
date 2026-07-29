@@ -1,0 +1,22 @@
+# PeachtreesCMS - Apache Environment Configuration & Security Rules
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # 1. Prevent directory listing / indexes leakage
+  Options -Indexes
+
+  # 2. Block direct access to sensitive config & metadata files
+  <FilesMatch "^\.(env|installed|gitignore|git)$">
+    <IfModule mod_authz_core.c>
+      Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+      Order allow,deny
+      Deny from all
+    </IfModule>
+  </FilesMatch>
+
+  # 3. Secondary protection specifically for pt_api/.env or similar
+  RewriteRule ^pt_api/\.(env|installed)$ - [F,L]
+</IfModule>

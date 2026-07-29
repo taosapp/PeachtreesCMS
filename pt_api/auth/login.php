@@ -47,7 +47,7 @@ try {
     $pdo = getDB();
     
     // Query user
-    $stmt = $pdo->prepare("SELECT id, username, email, password_hash FROM pt_users WHERE username = ? OR email = ?");
+    $stmt = $pdo->prepare("SELECT id, username, email, password_hash, role FROM pt_users WHERE username = ? OR email = ?");
     $stmt->execute([$username, $username]);
     $user = $stmt->fetch();
     
@@ -71,6 +71,7 @@ try {
     // Set Session
     $_SESSION['uid'] = $user['id'];
     $_SESSION['user'] = $user['username'];
+    $_SESSION['role'] = (int)($user['role'] ?? 2);
 
     // Update login time
     $updateStmt = $pdo->prepare("UPDATE pt_users SET last_login_at = NOW() WHERE id = ?");
@@ -80,7 +81,8 @@ try {
     success([
         'id' => $user['id'],
         'username' => $user['username'],
-        'email' => $user['email']
+        'email' => $user['email'],
+        'role' => (int)($user['role'] ?? 2)
     ], 'Login successful');
 
 } catch (PDOException $e) {

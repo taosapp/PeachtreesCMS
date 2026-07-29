@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { postsAPI, commentsAPI } from '../../services/api'
+import { postsAPI, commentsAPI, baseURL } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import Header from '../../components/Header'
@@ -109,8 +109,7 @@ export default function PostDetail() {
   }
 
   const refreshCaptcha = () => {
-    const apiBase = import.meta.env.VITE_API_BASE_URL
-    const base = apiBase.replace(/\/$/, '')
+    const base = baseURL.replace(/\/$/, '')
     setCaptchaUrl(`${base}/captcha.php?t=${Date.now()}`)
   }
 

@@ -24,3 +24,7 @@ pt_api/.env.local
 
 # Install lock file
 pt_api/.installed
+
+# Build and release archives
+release.zip
+release-temp/

@@ -15,8 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     error('Method not allowed', 405);
 }
 
-// Verify login
-requireAuth();
+// Verify login and require admin privileges
+requireAdmin();
 
 // Get request parameters
 $input = getJsonInput();

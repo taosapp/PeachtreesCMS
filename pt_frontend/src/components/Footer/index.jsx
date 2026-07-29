@@ -1,5 +1,6 @@
 import { useTheme } from '../../contexts/ThemeContext'
 import { sanitizeHtml } from '../../utils/sanitizeHtml'
+import { baseURL } from '../../services/api'
 
 export default function Footer() {
   const { siteOptions } = useTheme()
@@ -12,7 +13,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="inner">
         <div className="footer-text" dangerouslySetInnerHTML={{ __html: safeHtml }} />
-        <p>Powered by <a href="https://github.com/taotaotao-studio/PeachtreesCMS" target="_blank">PeachtreesCMS</a> · <a href={`${import.meta.env.VITE_API_BASE_URL}rss.php`} target="_blank">RSS</a> </p>
+        <p>Powered by <a href="https://github.com/taotaotao-studio/PeachtreesCMS" target="_blank">PeachtreesCMS</a> · <a href={`${baseURL}rss.php`} target="_blank">RSS</a> </p>
       </div>
     </footer>
   )

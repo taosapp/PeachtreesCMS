@@ -138,6 +138,10 @@ export default function Settings() {
                             >
                                 <option value="zh-CN">{lang('chineseSimplified')}</option>
                                 <option value="en-US">{lang('english')}</option>
+                                <option value="ja-JP">{lang('japanese')}</option>
+                                <option value="de-DE">{lang('german')}</option>
+                                <option value="fr-FR">{lang('french')}</option>
+                                <option value="es-ES">{lang('spanish')}</option>
                             </select>
                             <div className="form-text">{lang('defaultLanguageHelp')}</div>
                         </div>

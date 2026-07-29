@@ -1,11 +1,7 @@
 <?php
 
 function pluginsBaseDir(): string {
-    $dir = __DIR__ . '/../plugin';
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0755, true);
-    }
-    return $dir;
+    return __DIR__;
 }
 
 function isValidPluginSlug(string $slug): bool {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { postsAPI, tagsAPI } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { useAuth } from '../../contexts/AuthContext'
 import Pager from '../../components/Pager'
 import { publicUrl } from '../../utils/path'
 
@@ -15,6 +16,15 @@ export default function PostList() {
   const [error, setError] = useState(null)
   const [selectedIds, setSelectedIds] = useState(new Set())
   const { lang } = useLanguage()
+  const { user: currentUser } = useAuth()
+
+  const canManagePost = (post) => {
+    if (!currentUser) return false;
+    // Admins (role = 1) can edit/delete any post
+    if (currentUser.role === 1) return true;
+    // Authors (role = 2) can only edit/delete their own posts
+    return parseInt(post.user_id) === parseInt(currentUser.id);
+  }
 
   const page = pagination.page
 
@@ -214,73 +224,84 @@ export default function PostList() {
                 </tr>
               </thead>
               <tbody>
-                {posts.map(post => (
-                  <tr key={post.id}>
-                    <td className="align-middle">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={selectedIds.has(post.id)}
-                        onChange={() => toggleSelect(post.id)}
-                      />
-                    </td>
-                    <td className="align-middle">{post.id}</td>
-                    <td className="align-middle">
-                      <a href={publicUrl(`/#/post/${post.slug || post.id}`)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
-                        {post.title}
-                      </a>
-                      {post.post_type === 'big-picture' && (
-                        <span className="badge bg-dark ms-2">big-picture</span>
-                      )}
-                      {post.slug && (
-                        <span className="badge bg-light text-secondary ms-2" style={{ fontSize: '0.75rem' }}>
-                          {post.slug}
-                        </span>
-                      )}
-                    </td>
-                    <td className="align-middle">
-                      <span className="badge bg-secondary">{post.display_name}</span>
-                    </td>
-                    <td className="align-middle text-muted">
-                      <small>{post.created_at || ''}</small>
-                    </td>
-                    <td className="align-middle text-center">
-                      <div className="btn-group btn-group-sm">
-                        <Link
-                          to={`/admin/posts/edit/${post.id}`}
-                          className="btn post-action-btn post-action-edit"
-                          title={lang('edit')}
-                        >
-                          <i className="bi bi-pen"></i>
-                        </Link>
-                        {post.active == 1 ? (
-                          <button
-                            className="btn post-action-btn post-action-toggle active"
-                            onClick={() => handleToggleActive(post.id, post.active)}
-                            title={lang('unpublish')}
-                          >
-                            <i className="bi bi-download"></i>
-                          </button>
-                        ) : (
-                          <button
-                            className="btn post-action-btn post-action-toggle"
-                            onClick={() => handleToggleActive(post.id, post.active)}
-                            title={lang('publish')}
-                          >
-                            <i className="bi bi-upload"></i>
-                          </button>
+                {posts.map(post => {
+                  const allowed = canManagePost(post);
+                  return (
+                    <tr key={post.id}>
+                      <td className="align-middle">
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={selectedIds.has(post.id)}
+                          onChange={() => toggleSelect(post.id)}
+                          disabled={!allowed}
+                        />
+                      </td>
+                      <td className="align-middle">{post.id}</td>
+                      <td className="align-middle">
+                        <a href={publicUrl(`/#/post/${post.slug || post.id}`)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                          {post.title}
+                        </a>
+                        {post.post_type === 'big-picture' && (
+                          <span className="badge bg-dark ms-2">big-picture</span>
                         )}
-                        <button
-                          className="btn post-action-btn post-action-delete"
-                          onClick={() => handleDelete(post.id)}
-                          title={lang('delete')}
-                        >
-                          <i className="bi bi-trash-fill"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                        {post.slug && (
+                          <span className="badge bg-light text-secondary ms-2" style={{ fontSize: '0.75rem' }}>
+                            {post.slug}
+                          </span>
+                        )}
+                      </td>
+                      <td className="align-middle">
+                        <span className="badge bg-secondary">{post.display_name}</span>
+                      </td>
+                      <td className="align-middle text-muted">
+                        <small>{post.created_at || ''}</small>
+                      </td>
+                      <td className="align-middle text-center">
+                        {!allowed ? (
+                          <span className="text-muted small border border-light p-1 bg-white rounded shadow-2xs" title="属于其他作者的文章，您无权编辑">
+                            <i className="bi bi-lock-fill text-secondary me-1"></i>
+                            {lang('readOnly')}
+                          </span>
+                        ) : (
+                          <div className="btn-group btn-group-sm">
+                            <Link
+                              to={`/admin/posts/edit/${post.id}`}
+                              className="btn post-action-btn post-action-edit"
+                              title={lang('edit')}
+                            >
+                              <i className="bi bi-pen"></i>
+                            </Link>
+                            {post.active == 1 ? (
+                              <button
+                                className="btn post-action-btn post-action-toggle active"
+                                onClick={() => handleToggleActive(post.id, post.active)}
+                                title={lang('unpublish')}
+                              >
+                                <i className="bi bi-download"></i>
+                              </button>
+                            ) : (
+                              <button
+                                className="btn post-action-btn post-action-toggle"
+                                onClick={() => handleToggleActive(post.id, post.active)}
+                                title={lang('publish')}
+                              >
+                                <i className="bi bi-upload"></i>
+                              </button>
+                            )}
+                            <button
+                              className="btn post-action-btn post-action-delete"
+                              onClick={() => handleDelete(post.id)}
+                              title={lang('delete')}
+                            >
+                              <i className="bi bi-trash-fill"></i>
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

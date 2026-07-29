@@ -5,9 +5,9 @@
 #     ├── index.html
 #     ├── admin.html
 #     ├── assets/
-#     ├── upload/                  ← PHP 需要跨目录写入此目录
-#     ├── theme/
-#     ├── pattern/
+#     ├── upload/                  ← PHP 需要跨目录写入上传目录
+#     ├── theme/                   ← PHP 需要跨目录扫描主题目录
+#     ├── pattern/                 ← PHP 需要跨目录扫描风格目录
 #     ├── languages/
 #     └── imgs/
 #
@@ -34,15 +34,12 @@ server {
     index index.html;
     server_name your-domain.com;
 
-    # 拒绝访问敏感文件
-    location ~ /\.env {
+    # 拒绝访问所有以点 (.) 开头的隐藏敏感文件或目录（如 .env, .installed, .git, .htaccess）
+    location ~ /\. {
         deny all;
         return 404;
-    }
-
-    location ~ /\.installed {
-        deny all;
-        return 404;
+        log_not_found off;
+        access_log off;
     }
 
     # PHP 处理 — PHP 文件在 web root 之外，通过绝对路径指定

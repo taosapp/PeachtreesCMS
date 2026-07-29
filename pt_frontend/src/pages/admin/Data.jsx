@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { dataAPI } from '../../services/api'
+import { dataAPI, baseURL } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
 
 export default function Data() {
   const { lang } = useLanguage()
-  const apiBase = import.meta.env.VITE_API_BASE_URL
+  const apiBase = baseURL
   const apiUrl = (path) => `${apiBase.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
   const [selectedFile, setSelectedFile] = useState(null)
   const [importing, setImporting] = useState(false)

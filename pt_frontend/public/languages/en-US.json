@@ -39,6 +39,8 @@
     "confirmPassword": "Confirm Password",
     "oldPassword": "Old Password",
     "changePassword": "Change Password",
+    "editProfile": "Edit Profile",
+    "editUser": "Edit User",
     "registerTime": "Register Time",
     "lastLogin": "Last Login",
     "loginTitle": "Login",
@@ -53,6 +55,7 @@
     "deleteSuccess": "Deleted successfully",
     "saveSuccess": "Saved successfully",
     "required": "This field is required",
+    "readOnly": "Read Only (Locked)",
     "comments": "Comments",
     "commentList": "Comment List",
     "commentContent": "Content",
@@ -239,5 +242,9 @@
     "showLogo": "Show Logo Image",
     "showLogoHelp": "Display /theme/default/logo.png in header, use site_title as alt attribute",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "japanese": "Japanese (日本語)",
+    "german": "German (Deutsch)",
+    "french": "French (Français)",
+    "spanish": "Spanish (Español)"
 }

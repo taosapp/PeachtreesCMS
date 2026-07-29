@@ -16,7 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Verify authentication
-requireAuth();
+$currentUser = requireAuth();
+$authorId = (int)$currentUser['id'];
 
 // Get request parameters
 $input = getJsonInput();
@@ -92,9 +93,10 @@ if ($postType === 'big-picture' && count($coverMedia) === 0) {
     // Insert post — default active=1, created_at uses NOW() or custom value
     $active = $isFuture ? 0 : 1;
     $now = date('Y-m-d H:i:s');
-    $sql = "INSERT INTO pt_posts (tag, post_type, page_style, title, slug, summary, cover_media, content, allow_comments, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO pt_posts (user_id, tag, post_type, page_style, title, slug, summary, cover_media, content, allow_comments, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
+        $authorId,
         $tag,
         $postType,
         $pageStyle !== '' ? $pageStyle : null,

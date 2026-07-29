@@ -144,6 +144,65 @@ function testConnection(array $cfg): array {
     }
 }
 
+function checkRequirements(): array {
+    $checks = [];
+    
+    // PHP 版本
+    $checks[] = [
+        'key' => 'install.req_php_version',
+        'pass' => version_compare(PHP_VERSION, '8.1.0', '>='),
+        'detail' => PHP_VERSION
+    ];
+    
+    // PDO MySQL
+    $checks[] = [
+        'key' => 'install.req_pdo_mysql',
+        'pass' => extension_loaded('pdo_mysql'),
+        'detail' => extension_loaded('pdo_mysql') ? 'enabled' : 'missing'
+    ];
+    
+    // Fileinfo
+    $checks[] = [
+        'key' => 'install.req_fileinfo',
+        'pass' => extension_loaded('fileinfo'),
+        'detail' => extension_loaded('fileinfo') ? 'enabled' : 'missing'
+    ];
+    
+    // pt_api/ 可写
+    $apiDir = __DIR__;
+    $checks[] = [
+        'key' => 'install.req_writable_api',
+        'pass' => is_writable($apiDir),
+        'detail' => $apiDir
+    ];
+    
+    // upload/ 可写
+    $uploadDir = dirname(__DIR__) . '/upload';
+    $checks[] = [
+        'key' => 'install.req_writable_upload',
+        'pass' => is_writable($uploadDir),
+        'detail' => $uploadDir
+    ];
+    
+    // theme/ 可写
+    $themeDir = dirname(__DIR__) . '/theme';
+    $checks[] = [
+        'key' => 'install.req_writable_theme',
+        'pass' => is_writable($themeDir),
+        'detail' => $themeDir
+    ];
+    
+    // pattern/ 可写
+    $patternDir = dirname(__DIR__) . '/pattern';
+    $checks[] = [
+        'key' => 'install.req_writable_pattern',
+        'pass' => is_writable($patternDir),
+        'detail' => $patternDir
+    ];
+    
+    return $checks;
+}
+
 // Get current language
 $currentLang = getCurrentLanguage();
 
@@ -193,7 +252,7 @@ if ($action === 'install' && empty($errors)) {
         $step = 1;
     } else {
         $pdo = $result['pdo'];
-        $sqlPath = dirname(__DIR__) . '/data-init.sql';
+        $sqlPath = __DIR__ . '/data-init.sql';
         if (!is_file($sqlPath)) {
             $errors[] = __('install.sql_not_found');
             $step = 1;
@@ -232,7 +291,18 @@ if ($action === 'install' && empty($errors)) {
 
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$baseUrl = $scheme . '://' . $host;
+
+// Get the directory of the current script to calculate installation subdirectory
+$scriptName = $_SERVER['SCRIPT_NAME'] ?? $_SERVER['PHP_SELF'] ?? '';
+$scriptDir = dirname($scriptName);
+$scriptDir = str_replace('\\', '/', $scriptDir); // Normalize path slashes for URL
+$cmsRootDir = dirname($scriptDir);
+$cmsRootDir = str_replace('\\', '/', $cmsRootDir);
+if ($cmsRootDir === '/' || $cmsRootDir === '\\') {
+    $cmsRootDir = '';
+}
+
+$baseUrl = $scheme . '://' . $host . $cmsRootDir;
 $availableLanguages = getAvailableLanguages();
 ?>
 <!doctype html>
@@ -291,7 +361,40 @@ $availableLanguages = getAvailableLanguages();
       <div class="alert alert-success"><?php echo h($success); ?></div>
     <?php endif; ?>
 
-    <?php if ($step === 1): ?>
+    <?php if ($step === 1): 
+      $reqChecks = checkRequirements();
+      $allPassed = true;
+      foreach ($reqChecks as $check) {
+          if (!$check['pass']) {
+              $allPassed = false;
+          }
+      }
+    ?>
+      <div style="margin-bottom: 24px; padding: 16px; border: 1px solid #ddd; border-radius: 6px; background: #fafafa;">
+        <h3 style="margin-top: 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 8px;"><?php echo __('install.requirement_check'); ?></h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <?php foreach ($reqChecks as $check): ?>
+            <tr style="border-bottom: 1px solid #f0f0f0;">
+              <td style="padding: 8px 0; color: #333;"><?php echo __($check['key']); ?></td>
+              <td style="padding: 8px 0; text-align: right; font-weight: bold;">
+                <?php if ($check['pass']): ?>
+                  <span style="color: #1a7f1a;">✔</span>
+                <?php else: ?>
+                  <span style="color: #a40000;">✘</span>
+                <?php endif; ?>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        </table>
+        <div style="margin-top: 12px; font-weight: bold; text-align: center;">
+          <?php if ($allPassed): ?>
+            <div style="color: #1a7f1a; padding: 6px; background: #e7f7e7; border-radius: 4px; font-size: 13px;"><?php echo __('install.req_pass'); ?></div>
+          <?php else: ?>
+            <div style="color: #a40000; padding: 6px; background: #ffe8e8; border-radius: 4px; font-size: 13px;"><?php echo __('install.req_fail'); ?></div>
+          <?php endif; ?>
+        </div>
+      </div>
+
       <form method="post" id="mainForm">
         <input type="hidden" name="action" value="check" />
         <input type="hidden" name="lang" id="langInput" value="<?php echo h($currentLang); ?>" />
@@ -316,7 +419,10 @@ $availableLanguages = getAvailableLanguages();
           <input name="db_prefix" value="<?php echo h($form['db_prefix']); ?>" />
         </div>
         <div class="actions">
-          <button class="btn btn-primary" type="submit"><?php echo __('install.next'); ?></button>
+          <button class="btn btn-primary" type="submit" <?php echo !$allPassed ? 'disabled style="background: #ccc; cursor: not-allowed;"' : ''; ?>><?php echo __('install.next'); ?></button>
+          <?php if (!$allPassed): ?>
+            <a class="btn btn-secondary" href="javascript:window.location.reload();">🔄 <?php echo $currentLang === 'zh' ? '刷新重试' : 'Refresh'; ?></a>
+          <?php endif; ?>
         </div>
       </form>
     <?php elseif ($step === 2): ?>

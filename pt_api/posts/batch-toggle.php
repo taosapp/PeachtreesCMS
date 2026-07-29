@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'PUT' && $_SERVER['REQUEST_METHOD'] !== 'POST
     error('Method not allowed', 405);
 }
 
-requireAuth();
+$currentUser = requireAuth();
 
 $input = getJsonInput();
 $ids = $input['ids'] ?? [];
@@ -37,9 +37,19 @@ try {
     $pdo = getDB();
 
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
-    $sql = "UPDATE pt_posts SET active = ?, updated_at = NOW() WHERE id IN ($placeholders)";
+    $params = array_merge([$active], $ids);
+
+    if ((int)($currentUser['role'] ?? 2) !== 1) {
+        // For non-admins, only allow toggling their own posts
+        $sql = "UPDATE pt_posts SET active = ?, updated_at = NOW() WHERE id IN ($placeholders) AND user_id = ?";
+        $params[] = (int)$currentUser['id'];
+    } else {
+        // Admins can toggle any posts
+        $sql = "UPDATE pt_posts SET active = ?, updated_at = NOW() WHERE id IN ($placeholders)";
+    }
+    
     $stmt = $pdo->prepare($sql);
-    $stmt->execute(array_merge([$active], $ids));
+    $stmt->execute($params);
 
     success([
         'affected' => $stmt->rowCount(),

@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'PUT' && $_SERVER['REQUEST_METHOD'] !== 'POST
 }
 
 // Verify authentication
-requireAuth();
+$currentUser = requireAuth();
 
 // Get request parameters
 $input = getJsonInput();
@@ -99,12 +99,19 @@ try {
     }
 
     // Check if post exists
-    $checkStmt = $pdo->prepare("SELECT id, tag, post_type, slug, summary, cover_media, allow_comments, created_at FROM pt_posts WHERE id = ?");
+    $checkStmt = $pdo->prepare("SELECT id, user_id, tag, post_type, slug, summary, cover_media, allow_comments, created_at FROM pt_posts WHERE id = ?");
     $checkStmt->execute([$id]);
     $oldPost = $checkStmt->fetch();
 
     if (!$oldPost) {
         notFound('Post not found');
+    }
+
+    // Role-based authorization check
+    if ((int)($currentUser['role'] ?? 2) !== 1) {
+        if ((int)$oldPost['user_id'] !== (int)$currentUser['id']) {
+            forbidden('You do not have permission to edit this post');
+        }
     }
 
     $oldTag = $oldPost['tag'];

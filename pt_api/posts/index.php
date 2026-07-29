@@ -47,7 +47,7 @@ try {
     $total = $countStmt->fetchColumn();
     
     // Get post list
-    $listSql = "SELECT p.id, p.tag, p.post_type, p.title, p.slug, p.summary, p.cover_media, p.content, p.allow_comments, p.active, p.created_at, p.updated_at,
+    $listSql = "SELECT p.id, p.user_id, p.tag, p.post_type, p.title, p.slug, p.summary, p.cover_media, p.content, p.allow_comments, p.active, p.created_at, p.updated_at,
                 t.display_name, t.page_style AS tag_page_style
                 FROM pt_posts p
                 LEFT JOIN pt_tags t ON p.tag = t.tag

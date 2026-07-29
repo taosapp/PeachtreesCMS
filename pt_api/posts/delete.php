@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'DELETE' && $_SERVER['REQUEST_METHOD'] !== 'P
 }
 
 // Verify authentication
-requireAuth();
+$currentUser = requireAuth();
 
 // Get request parameters
 $input = getJsonInput();
@@ -34,13 +34,20 @@ if ($id <= 0) {
 try {
     $pdo = getDB();
     
-    // Check if post exists and get its tag
-    $checkStmt = $pdo->prepare("SELECT id, tag FROM pt_posts WHERE id = ?");
+    // Check if post exists and get its tag and user_id
+    $checkStmt = $pdo->prepare("SELECT id, user_id, tag FROM pt_posts WHERE id = ?");
     $checkStmt->execute([$id]);
     $post = $checkStmt->fetch();
     
     if (!$post) {
         notFound('Post not found');
+    }
+
+    // Role-based authorization check
+    if ((int)($currentUser['role'] ?? 2) !== 1) {
+        if ((int)$post['user_id'] !== (int)$currentUser['id']) {
+            forbidden('You do not have permission to delete this post');
+        }
     }
     
     $tag = $post['tag'];

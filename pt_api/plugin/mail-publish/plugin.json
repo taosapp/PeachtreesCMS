@@ -1,9 +1,0 @@
-{
-  "slug": "mail-publish",
-  "name": "邮件发布",
-  "name_en": "Mail Publish",
-  "description": "通过邮件发布文章",
-  "description_en": "Publish posts via email",
-  "version": "0.1.0",
-  "admin_path": "/admin/plugins/mail-publish"
-}

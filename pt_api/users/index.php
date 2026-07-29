@@ -21,7 +21,7 @@ requireAdmin();
 try {
     $pdo = getDB();
     
-    $sql = "SELECT id, username, email, created_at, last_login_at FROM pt_users ORDER BY id ASC";
+    $sql = "SELECT id, username, nickname, email, created_at, last_login_at FROM pt_users ORDER BY id ASC";
     $stmt = $pdo->query($sql);
     $users = $stmt->fetchAll();
     

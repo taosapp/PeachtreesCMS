@@ -22,8 +22,14 @@ requireAdmin();
 // Get request parameters
 $input = getJsonInput();
 $username = trim($input['username'] ?? '');
+$nickname = trim($input['nickname'] ?? '');
 $email = trim($input['email'] ?? '');
 $password = $input['password'] ?? '';
+$role = isset($input['role']) ? (int)$input['role'] : 2;
+
+if ($role !== 1 && $role !== 2) {
+    $role = 2;
+}
 
 // Validate input
 if (empty($username)) {
@@ -67,9 +73,9 @@ try {
     $hashedPassword = hashPassword($password);
 
     // Insert user
-    $sql = "INSERT INTO pt_users (username, email, password_hash, created_at, last_login_at) VALUES (?, ?, ?, NOW(), NOW())";
+    $sql = "INSERT INTO pt_users (username, nickname, email, password_hash, role, created_at, last_login_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$username, $email, $hashedPassword]);
+    $stmt->execute([$username, $nickname !== '' ? $nickname : null, $email, $hashedPassword, $role]);
     
     $userId = $pdo->lastInsertId();
     

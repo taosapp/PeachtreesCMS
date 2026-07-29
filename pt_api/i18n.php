@@ -38,7 +38,7 @@ function detectAPILanguage(): string {
     
     // Check for explicit lang parameter (GET or POST)
     $langParam = $_GET['lang'] ?? $_POST['lang'] ?? '';
-    if ($langParam !== '' && in_array($langParam, ['en', 'zh'], true)) {
+    if ($langParam !== '' && in_array($langParam, ['en', 'zh', 'jp', 'de', 'fr', 'es'], true)) {
         $detected = $langParam;
         return $detected;
     }
@@ -59,10 +59,14 @@ function detectAPILanguage(): string {
         }
         arsort($langs);
         
-        // Match supported languages
+        // Match supported languages (browser uses 'ja' for Japanese)
         foreach ($langs as $lang => $q) {
             $lang = strtolower(substr($lang, 0, 2));
-            if (in_array($lang, ['en', 'zh'], true)) {
+            if ($lang === 'ja' || $lang === 'jp') {
+                $detected = 'jp';
+                return $detected;
+            }
+            if (in_array($lang, ['en', 'zh', 'de', 'fr', 'es'], true)) {
                 $detected = $lang;
                 return $detected;
             }
@@ -92,5 +96,9 @@ function getAvailableLanguages(): array {
     return [
         'en' => 'English',
         'zh' => '中文',
+        'jp' => '日本語',
+        'de' => 'Deutsch',
+        'fr' => 'Français',
+        'es' => 'Español',
     ];
 }
