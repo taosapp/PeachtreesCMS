@@ -51,6 +51,25 @@ CREATE TABLE IF NOT EXISTS `pt_users` (
 INSERT INTO `pt_users` (`id`, `username`, `nickname`, `email`, `password_hash`, `role`, `created_at`, `last_login_at`) VALUES
 	(1, 'admin', '管理员', 'admin@peachtrees.com', '$2y$12$YBnqh4Wjt6sEqYZkaKb7LOqx.k460jVm5aasKSwAQdfSAOSylGPLm', 1, '2026-03-24 17:18:51', '2026-06-11 21:54:48');
 
+-- Table: pt_media
+CREATE TABLE IF NOT EXISTS `pt_media` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL COMMENT '上传者ID，关联 pt_users.id',
+  `filename` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '保存在服务器的实际随机文件名',
+  `original_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户上传时的原始文件名',
+  `path` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文件在服务器上的相对路径',
+  `mime_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '媒体MIME类型',
+  `file_size` bigint NOT NULL COMMENT '文件大小（字节数）',
+  `alt_text` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '图片的SEO替代文本',
+  `created_at` datetime NOT NULL COMMENT '上传时间',
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `idx_mime` (`mime_type`),
+  KEY `idx_created` (`created_at`),
+  KEY `idx_original_name` (`original_name`),
+  CONSTRAINT `pt_media_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `pt_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Table: pt_comment_users
 CREATE TABLE IF NOT EXISTS `pt_comment_users` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -76,13 +95,13 @@ CREATE TABLE IF NOT EXISTS `pt_options` (
 
 INSERT INTO `pt_options` (`id`, `option_key`, `option_value`, `created_at`, `updated_at`) VALUES
 	(1, 'site_title', 'PeachtreesCMS', '2026-03-24 17:18:52', '2026-03-24 17:18:52'),
-	(2, 'footer_text', '<p>© 2026 Powered by <a target="_blank" rel="noopener noreferrer" href="https://github.com/taotaotao-studio/PeachtreesCMS">PeachtreesCMS</a>.</p>', '2026-03-24 17:18:52', '2026-03-24 17:25:13'),
+	(2, 'footer_text', '', '2026-03-24 17:18:52', '2026-03-24 17:25:13'),
 	(3, 'default_lang', 'zh-CN', '2026-03-24 17:18:52', '2026-06-11 21:58:53'),
 	(4, 'plugin_enabled_mail-publish', '0', '2026-03-30 17:36:44', '2026-03-30 17:36:48'),
 	(13, 'show_logo', '1', '2026-04-10 00:57:05', '2026-04-10 00:57:05');
 
--- Table: pt_page_style
-CREATE TABLE IF NOT EXISTS `pt_page_style` (
+-- Table: pt_patterns
+CREATE TABLE IF NOT EXISTS `pt_patterns` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '主题目录名',
   `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '主题描述',
@@ -94,7 +113,7 @@ CREATE TABLE IF NOT EXISTS `pt_page_style` (
   UNIQUE KEY `uniq_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=95 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
-INSERT INTO `pt_page_style` (`id`, `name`, `description`, `version`, `author`, `entry_css`, `thumbnail`) VALUES
+INSERT INTO `pt_patterns` (`id`, `name`, `description`, `version`, `author`, `entry_css`, `thumbnail`) VALUES
 	(1, '01', '经典蓝色背景，适合商务和正式场合', '1.0', 'PeachtreesCMS', 'style.css', '/pattern/01/bg.svg'),
 	(2, '02', '温暖的橙色渐变背景，适合生活和旅行类文章', '1.0', 'PeachtreesCMS', 'style.css', NULL);
 

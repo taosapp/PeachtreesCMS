@@ -3,8 +3,8 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { postsAPI, tagsAPI, stylesAPI } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { publicUrl } from '../../utils/path'
+import MediaModal from '../../components/MediaModal'
 
-// 动态导入 Tiptap 编辑器，实现按需加载
 const TiptapEditor = lazy(() => import('../../components/TiptapEditor'))
 
 function toPublicPath(path) {
@@ -20,7 +20,7 @@ export default function PostEdit({ forcedPostType = null }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
-  const [uploadingCover, setUploadingCover] = useState(false)
+  const [showMediaModal, setShowMediaModal] = useState(false)
   const [tags, setTags] = useState([])
   const [patterns, setPatterns] = useState([])
   const [form, setForm] = useState({
@@ -29,7 +29,7 @@ export default function PostEdit({ forcedPostType = null }) {
     slug: '',
     tag: '',
     summary: '',
-    cover_media: [],
+    cover_media: [], // Array of { path, caption }
     page_style: '',
     content: '',
     allow_comments: true,
@@ -44,20 +44,6 @@ export default function PostEdit({ forcedPostType = null }) {
     loadPatterns()
     if (isEdit) {
       loadPost()
-    } else {
-      // 新建模式：重置表单
-      setForm({
-        post_type: forcedPostType || 'normal',
-        title: '',
-        slug: '',
-        tag: '',
-        summary: '',
-        cover_media: [],
-        page_style: '',
-        content: '',
-        allow_comments: true,
-        created_at: ''
-      })
     }
   }, [id])
 
@@ -71,12 +57,6 @@ export default function PostEdit({ forcedPostType = null }) {
       console.error('Failed to load patterns:', err)
     }
   }
-
-  useEffect(() => {
-    if (!isEdit && forcedPostType) {
-      setForm(prev => ({ ...prev, post_type: forcedPostType }))
-    }
-  }, [forcedPostType, isEdit])
 
   const loadTags = async () => {
     try {
@@ -97,17 +77,22 @@ export default function PostEdit({ forcedPostType = null }) {
     try {
       const res = await postsAPI.getOne(id)
       if (res.success) {
+        const data = res.data
+        const coverMedia = Array.isArray(data.cover_media) 
+          ? data.cover_media.map(item => typeof item === 'string' ? { path: item, caption: '' } : item)
+          : []
+          
         setForm({
-          post_type: res.data.post_type || 'normal',
-          title: res.data.title,
-          slug: res.data.slug || '',
-          tag: res.data.tag,
-          summary: res.data.summary || '',
-          cover_media: Array.isArray(res.data.cover_media) ? res.data.cover_media : [],
-          page_style: res.data.page_style || '',
-          content: res.data.content,
-          allow_comments: res.data.allow_comments === 1,
-          created_at: res.data.created_at || ''
+          post_type: data.post_type || 'normal',
+          title: data.title,
+          slug: data.slug || '',
+          tag: data.tag,
+          summary: data.summary || '',
+          cover_media: coverMedia,
+          page_style: data.page_style || '',
+          content: data.content,
+          allow_comments: data.allow_comments === 1,
+          created_at: data.created_at || ''
         })
       }
     } catch (err) {
@@ -137,111 +122,57 @@ export default function PostEdit({ forcedPostType = null }) {
     setLoading(true)
     try {
       if (isEdit) {
-        console.log('Submitting update:', { id, ...form })
-        const res = await postsAPI.update({ id, ...form })
-        console.log('Update response:', res)
+        await postsAPI.update({ id, ...form })
       } else {
-        const res = await postsAPI.create(form)
-        console.log('Create response:', res)
+        await postsAPI.create(form)
       }
       navigate('/admin/posts')
     } catch (err) {
-      console.error('Submit error:', err)
       alert(err.message)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleCoverUpload = async (e) => {
-    const files = Array.from(e.target.files || [])
-    if (files.length === 0) return
+  const handleMediaSelect = (paths) => {
+    const newItems = paths.map(path => ({ path, caption: '' }))
+    setForm(prev => ({
+      ...prev,
+      cover_media: [...prev.cover_media, ...newItems]
+    }))
+  }
 
-    const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'mp4']
-    const invalidFiles = files.filter(file => {
-      const ext = file.name.split('.').pop().toLowerCase()
-      return !allowedExts.includes(ext)
-    })
-
-    if (invalidFiles.length > 0) {
-      alert(`${lang('invalidFileFormat')}\n${invalidFiles.map(f => f.name).join('\n')}\n\n${lang('supportedFormats')}: ${allowedExts.join(', ')}`)
-      e.target.value = ''
-      return
-    }
-
-    const uploadForm = new FormData()
-    files.forEach(file => uploadForm.append('files[]', file))
-
-    setUploadingCover(true)
-    try {
-      const raw = await postsAPI.uploadBigPicture(uploadForm)
-      const res = normalizeUploadResponse(raw)
-      if (!res.success) throw new Error(res.message || '上传失败')
-      const next = Array.isArray(res.data?.paths) ? res.data.paths : []
-      setForm(prev => ({
-        ...prev,
-        cover_media: [...prev.cover_media, ...next]
-      }))
-    } catch (err) {
-      alert(err.message)
-    } finally {
-      setUploadingCover(false)
-      e.target.value = ''
-    }
+  const updateCaption = (index, caption) => {
+    const nextList = [...form.cover_media]
+    nextList[index].caption = caption
+    setForm(prev => ({ ...prev, cover_media: nextList }))
   }
 
   const removeCoverMedia = (index) => {
-    setForm(prev => ({
-      ...prev,
-      cover_media: prev.cover_media.filter((_, i) => i !== index)
-    }))
+    setForm(prev => ({ ...prev, cover_media: prev.cover_media.filter((_, i) => i !== index) }))
   }
 
   const moveCoverMedia = (index, direction) => {
     const nextList = [...form.cover_media]
     const targetIdx = index + direction
     if (targetIdx < 0 || targetIdx >= nextList.length) return
-
-    // Swap
     const temp = nextList[index]
     nextList[index] = nextList[targetIdx]
     nextList[targetIdx] = temp
-
     setForm(prev => ({ ...prev, cover_media: nextList }))
   }
 
   const clearAllCoverMedia = () => {
-    if (window.confirm(lang('confirmClearCover'))) {
-      setForm(prev => ({ ...prev, cover_media: [] }))
-    }
+    if (window.confirm(lang('confirmClearCover'))) setForm(prev => ({ ...prev, cover_media: [] }))
   }
 
   const normalizeUploadResponse = (res) => {
     if (res && typeof res === 'object') {
-      if (Object.prototype.hasOwnProperty.call(res, 'success')) return res
-      if (res.data && typeof res.data === 'object' && Object.prototype.hasOwnProperty.call(res.data, 'success')) {
-        return res.data
-      }
-      if (res.url || res.path || res.paths) {
-        return { success: true, data: res }
-      }
-      return res
+      if (res.success) return res
+      if (res.data?.success) return res.data
+      if (res.paths) return { success: true, data: res }
     }
-
-    if (typeof res === 'string') {
-      const start = res.indexOf('{')
-      const end = res.lastIndexOf('}')
-      if (start !== -1 && end > start) {
-        try {
-          const parsed = JSON.parse(res.slice(start, end + 1))
-          if (parsed && typeof parsed === 'object') return parsed
-        } catch {
-          // ignore parse error and fall through
-        }
-      }
-    }
-
-    return {}
+    return { success: false }
   }
 
   const uploadNormalMedia = async (file) => {
@@ -249,14 +180,8 @@ export default function PostEdit({ forcedPostType = null }) {
     uploadForm.append('file', file)
     const raw = await postsAPI.uploadMedia(uploadForm)
     const res = normalizeUploadResponse(raw)
-    if (!res.success) {
-      throw new Error(res.message || '上传失败')
-    }
-    const mediaUrl = res.data?.url || res.url || ''
-    if (!mediaUrl) {
-      throw new Error('上传成功但未返回媒体地址')
-    }
-    return mediaUrl
+    if (!res.success) throw new Error(res.message || '上传失败')
+    return res.data?.url || res.url || ''
   }
 
   const isBigPicture = form.post_type === 'big-picture'
@@ -265,359 +190,175 @@ export default function PostEdit({ forcedPostType = null }) {
     <div>
       <nav aria-label="breadcrumb" className="mb-4">
         <ol className="breadcrumb">
-          <li className="breadcrumb-item">
-            <Link to="/admin/posts">{lang('postList')}</Link>
-          </li>
-          <li className="breadcrumb-item active">
-            {isEdit ? lang('editPost') : lang('addPost')}
-          </li>
+          <li className="breadcrumb-item"><Link to="/admin/posts">{lang('postList')}</Link></li>
+          <li className="breadcrumb-item active">{isEdit ? lang('editPost') : lang('addPost')}</li>
         </ol>
       </nav>
 
-      <div className="card shadow-sm position-relative">
-        {uploadingCover && (
-          <div
-            className="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center rounded"
-            style={{
-              background: 'rgba(255, 255, 255, 0.8)',
-              zIndex: 1050,
-              top: 0,
-              left: 0
-            }}
-          >
-            <div className="spinner-border text-primary mb-2" role="status"></div>
-            <div className="fw-bold text-primary">{lang('uploadingCover')}</div>
-            <div className="small text-muted mt-1">{lang('doNotClosePage')}</div>
-          </div>
-        )}
-        <div className="card-header bg-white">
-          <h4 className="mb-0">
-            <i className={`bi ${isEdit ? 'bi-pencil' : 'bi-plus-circle'} me-2`}></i>
-            {isEdit ? lang('editPost') : lang('addPost')}
-          </h4>
-        </div>
-
-        {loading && !form.title ? (
-          <div className="card-body text-center py-5">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">{lang('loading')}</span>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            <div className="card-body">
-              <div className="mb-3">
-                <label className="form-label fw-bold">
-                  {lang('postTitle')} <span className="text-danger">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  className="form-control form-control-lg"
-                  placeholder={lang('postTitle')}
-                  value={form.title}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-bold">
-                  {lang('customSlug')}
-                </label>
-                <div className="input-group">
-                  <span className="input-group-text">/post/</span>
-                  <input
-                    type="text"
-                    name="slug"
-                    className="form-control"
-                    placeholder="about-us"
-                    value={form.slug}
-                    onChange={handleChange}
-                  />
-                </div>
-                <small className="text-muted">
-                  {lang('customSlugHelp')}
-                </small>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-bold">
-                  {lang('publishTime')}
-                </label>
-                <input
-                  type="datetime-local"
-                  name="created_at"
-                  className="form-control"
-                  style={{ maxWidth: '320px' }}
-                  value={form.created_at ? form.created_at.replace(' ', 'T').slice(0, 16) : ''}
-                  onChange={(e) => {
-                    const val = e.target.value
-                    setForm({ ...form, created_at: val ? val.replace('T', ' ') + ':00' : '' })
-                  }}
-                />
-                <small className="text-muted">
-                  {lang('publishTimeHelp')}
-                </small>
-              </div>
-
-              {!forcedPostType && (
+      <form onSubmit={handleSubmit}>
+        <div className="row g-4">
+          <div className="col-md-9">
+            <div className="card shadow-sm mb-4">
+              <div className="card-body">
+                {/* 1. Article Title */}
                 <div className="mb-3">
-                  <label className="form-label fw-bold">
-                    {lang('postType')}
-                  </label>
-                  <div className="d-flex gap-4">
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="post_type"
-                        id="postTypeNormal"
-                        value="normal"
-                        checked={form.post_type === 'normal'}
-                        onChange={handleChange}
-                      />
-                      <label className="form-check-label" htmlFor="postTypeNormal">
-                        normal
-                      </label>
-                    </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="post_type"
-                        id="postTypeBigPicture"
-                        value="big-picture"
-                        checked={form.post_type === 'big-picture'}
-                        onChange={handleChange}
-                      />
-                      <label className="form-check-label" htmlFor="postTypeBigPicture">
-                        big-picture
-                      </label>
+                  <label className="form-label fw-bold">{lang('postTitle')} *</label>
+                  <input type="text" name="title" className="form-control form-control-lg" value={form.title} onChange={handleChange} required />
+                </div>
+
+                {/* 2. Article Post Type (Radio Buttons) */}
+                {!forcedPostType && (
+                  <div className="mb-3">
+                    <label className="form-label fw-bold d-block">{lang('postType') || '文章类型'}</label>
+                    <div className="d-flex gap-4 my-2">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="post_type"
+                          id="postTypeNormal"
+                          value="normal"
+                          checked={form.post_type === 'normal'}
+                          onChange={handleChange}
+                        />
+                        <label className="form-check-label" htmlFor="postTypeNormal">
+                          Normal (普通文章)
+                        </label>
+                      </div>
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="post_type"
+                          id="postTypeBigPicture"
+                          value="big-picture"
+                          checked={form.post_type === 'big-picture'}
+                          onChange={handleChange}
+                        />
+                        <label className="form-check-label" htmlFor="postTypeBigPicture">
+                          Big Picture (大片文章)
+                        </label>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {patterns.length > 0 && (
-                <div className="mb-3">
-                  <label className="form-label fw-bold">
-                    {lang('pageStyle')}
-                  </label>
-                  <select
-                    name="page_style"
-                    className="form-select"
-                    value={form.page_style}
-                    onChange={handleChange}
-                  >
-                    <option value="">{lang('pageStyleDefault')}</option>
-                    {patterns.map(pattern => (
-                      <option key={pattern.id} value={pattern.name}>
-                        {pattern.name}
-                      </option>
+                {/* 3. Big Picture Cover Media Manager (Rendered above Content, right below Post Type) */}
+                {isBigPicture && (
+                  <div className="mb-4 p-3 bg-light rounded border">
+                    <label className="form-label fw-bold">{lang('coverMedia')} *</label>
+                    <button type="button" className="btn btn-outline-primary d-block w-100 mb-3" onClick={() => setShowMediaModal(true)}>
+                      <i className="bi bi-folder-plus me-1"></i> 从媒体库选择大片封面
+                    </button>
+                    
+                    {form.cover_media.length > 0 && (
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <span className="text-muted small fw-bold">
+                          已选择的大片封面数量: {form.cover_media.length}
+                        </span>
+                        <button type="button" className="btn btn-sm btn-outline-danger" onClick={clearAllCoverMedia}>
+                          <i className="bi bi-trash-fill me-1"></i> 清空所选
+                        </button>
+                      </div>
+                    )}
+
+                    {form.cover_media.map((item, index) => (
+                      <div key={index} className="card h-100 border shadow-none bg-white p-3 mb-2">
+                        <div className="d-flex align-items-center gap-3">
+                          {isMp4(item.path) ? (
+                            <video src={toPublicPath(item.path)} style={{ width: 80, height: 80, objectFit: 'cover', background: '#000' }} />
+                          ) : (
+                            <img src={toPublicPath(item.path)} style={{ width: 80, height: 80, objectFit: 'cover' }} />
+                          )}
+                          <div className="flex-grow-1">
+                            <input className="form-control mb-2" placeholder="输入本张媒体的图说文字..." value={item.caption} onChange={(e) => updateCaption(index, e.target.value)} />
+                            <div className="small text-muted text-break text-truncate" style={{ fontSize: '0.75rem', maxWidth: '300px' }}>
+                              {item.path.split('/').pop()}
+                            </div>
+                          </div>
+                          <div className="d-flex flex-column gap-1">
+                            <button type="button" className="btn btn-sm btn-light border" disabled={index === 0} onClick={() => moveCoverMedia(index, -1)}>
+                              <i className="bi bi-arrow-up"></i>
+                            </button>
+                            <button type="button" className="btn btn-sm btn-light border" disabled={index === form.cover_media.length - 1} onClick={() => moveCoverMedia(index, 1)}>
+                              <i className="bi bi-arrow-down"></i>
+                            </button>
+                            <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeCoverMedia(index)}>
+                              <i className="bi bi-trash"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </select>
-                  {form.page_style && (
-                    <small className="text-muted d-block mt-1">
-                      {patterns.find(p => p.name === form.page_style)?.description || ''}
-                    </small>
-                  )}
+                  </div>
+                )}
+                
+                {/* 4. Article Content Editor */}
+                <div className="mb-3">
+                  <label className="form-label fw-bold">{lang('postContent')}</label>
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <TiptapEditor
+                      value={form.content}
+                      onChange={(next) => setForm(prev => ({ ...prev, content: next }))}
+                      onUploadImage={uploadNormalMedia}
+                      onUploadVideo={uploadNormalMedia}
+                      onUploadAudio={uploadNormalMedia}
+                    />
+                  </Suspense>
                 </div>
-              )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right sidebar configuration panel (fixed width 240px) */}
+          <div className="col-md-3">
+            <div className="card shadow-sm p-3" style={{ minWidth: '240px' }}>
+              <h6 className="fw-bold mb-3 border-bottom pb-2">发布设置</h6>
+              
+              <div className="mb-3">
+                <label className="form-label small fw-bold">自定义URL (Slug)</label>
+                <input type="text" name="slug" className="form-control" placeholder="about-us" value={form.slug} onChange={handleChange} />
+              </div>
 
               <div className="mb-3">
-                <label className="form-label fw-bold">
-                  {lang('postCategory')} <span className="text-danger">*</span>
-                </label>
-                <select
-                  name="tag"
-                  className="form-select"
-                  value={form.tag}
-                  onChange={handleChange}
-                  required
-                >
-                  {tags.map(tag => (
-                    <option key={tag.id} value={tag.tag}>
-                      {tag.display_name}
-                    </option>
-                  ))}
+                <label className="form-label small fw-bold">{lang('publishTime')}</label>
+                <input type="datetime-local" className="form-control" value={form.created_at ? form.created_at.replace(' ', 'T').slice(0, 16) : ''} onChange={(e) => setForm({...form, created_at: e.target.value.replace('T', ' ') + ':00'})} />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label small fw-bold">{lang('postCategory')}</label>
+                <select name="tag" className="form-select" value={form.tag} onChange={handleChange} required>
+                  {tags.map(t => <option key={t.id} value={t.tag}>{t.display_name}</option>)}
                 </select>
               </div>
 
-              {isBigPicture && (
-                <>
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">
-                      {lang('coverSummary')}
-                    </label>
-                    <textarea
-                      name="summary"
-                      className="form-control"
-                      rows="3"
-                      placeholder={lang('coverSummaryPlaceholder')}
-                      value={form.summary}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">
-                      {lang('coverMedia')}
-                    </label>
-                    <input
-                      type="file"
-                      className="form-control"
-                      accept="image/jpeg,image/png,image/webp,image/gif,video/mp4"
-                      multiple
-                      onChange={handleCoverUpload}
-                      disabled={uploadingCover}
-                    />
-                    <small className="text-muted">
-                      {lang('coverMediaPath')}
-                    </small>
-                  </div>
-
-                  {form.cover_media.length > 0 && (
-                    <div className="mb-4">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span className="text-muted small">
-                          {lang('uploadedFiles')}: {form.cover_media.length}
-                        </span>
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={clearAllCoverMedia}
-                        >
-                          <i className="bi bi-trash-fill me-1"></i>
-                          {lang('clearAll')}
-                        </button>
-                      </div>
-                      <div className="row g-3">
-                        {form.cover_media.map((path, index) => (
-                          <div key={`${path}-${index}`} className="col-md-4">
-                            <div className="card h-100 border shadow-none bg-light">
-                              <div className="position-relative">
-                                {isMp4(path) ? (
-                                  <video src={toPublicPath(path)} className="card-img-top rounded-0" style={{ maxHeight: '180px', objectFit: 'contain', background: '#000' }} />
-                                ) : (
-                                  <img
-                                    src={toPublicPath(path)}
-                                    alt="cover"
-                                    className="card-img-top rounded-0"
-                                    style={{ maxHeight: '180px', objectFit: 'cover' }}
-                                  />
-                                )}
-                                <div className="position-absolute top-0 end-0 p-1">
-                                  <button
-                                    type="button"
-                                    className="btn btn-dark btn-sm p-1 rounded-circle"
-                                    style={{ width: '24px', height: '24px', lineHeight: '1', opacity: 0.8 }}
-                                    onClick={() => removeCoverMedia(index)}
-                                    title={lang('remove')}
-                                  >
-                                    <i className="bi bi-x"></i>
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="card-body p-2 d-flex flex-column">
-                                <div className="small text-muted text-break flex-grow-1 mb-2" style={{ fontSize: '0.75rem' }}>
-                                  {path.split('/').pop()}
-                                </div>
-                                <div className="d-flex gap-1 justify-content-center">
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm btn-light border"
-                                    disabled={index === 0}
-                                    onClick={() => moveCoverMedia(index, -1)}
-                                    title={lang('moveForward')}
-                                  >
-                                    <i className="bi bi-arrow-left"></i>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm btn-light border"
-                                    disabled={index === form.cover_media.length - 1}
-                                    onClick={() => moveCoverMedia(index, 1)}
-                                    title={lang('moveBackward')}
-                                  >
-                                    <i className="bi bi-arrow-right"></i>
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-
               <div className="mb-3">
-                <label className="form-label fw-bold">
-                  {lang('postContent')}
-                </label>
-                <Suspense fallback={
-                  <div className="text-center py-5">
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Loading editor...</span>
-                    </div>
-                    <p className="text-muted mt-2">Loading editor...</p>
-                  </div>
-                }>
-                  <TiptapEditor
-                    value={form.content}
-                    onChange={(nextContent) => setForm(prev => ({ ...prev, content: nextContent }))}
-                    onUploadImage={uploadNormalMedia}
-                    onUploadVideo={uploadNormalMedia}
-                    onUploadAudio={uploadNormalMedia}
-                  />
-                </Suspense>
+                <label className="form-label small fw-bold">{lang('pageStyle')}</label>
+                <select name="page_style" className="form-select" value={form.page_style} onChange={handleChange}>
+                  <option value="">{lang('pageStyleDefault')}</option>
+                  {patterns.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                </select>
               </div>
 
-              <div className="mb-3">
-                <div className="form-check form-switch">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="allowComments"
-                    name="allow_comments"
-                    checked={form.allow_comments}
-                    onChange={(e) => setForm({ ...form, allow_comments: e.target.checked })}
-                  />
-                  <label className="form-check-label fw-bold" htmlFor="allowComments">
-                    {lang('allowComments')}
-                  </label>
-                </div>
+              <div className="form-check form-switch mb-4">
+                <input className="form-check-input" type="checkbox" id="allowComments" checked={form.allow_comments} onChange={(e) => setForm({...form, allow_comments: e.target.checked})} />
+                <label className="form-check-label small fw-bold" htmlFor="allowComments">{lang('allowComments')}</label>
               </div>
-            </div>
 
-            <div className="card-footer bg-white d-flex gap-2">
-              <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                    {lang('loading')}
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-check-lg me-1"></i>
-                    {lang('submit')}
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => navigate('/admin/posts')}
-              >
-                <i className="bi bi-x-lg me-1"></i>
-                {lang('cancel')}
+              <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                <i className="bi bi-save me-1"></i>
+                {lang('save')}
               </button>
             </div>
-          </form>
-        )}
-      </div>
+          </div>
+        </div>
+      </form>
+
+      <MediaModal 
+        isOpen={showMediaModal} 
+        onClose={() => setShowMediaModal(false)} 
+        onSelect={handleMediaSelect} 
+      />
     </div>
   )
 }

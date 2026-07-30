@@ -437,8 +437,8 @@ body {
 /* Big picture */
 .main-big-picture-cover {
   position: relative;
-  height: 60vh;
-  min-height: 400px;
+  height: 100vh;
+  min-height: 960px;
   background: #212529;
 }
 

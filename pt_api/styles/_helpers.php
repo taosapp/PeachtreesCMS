@@ -69,7 +69,7 @@ function markStyleScanned(string $baseDir): void {
 }
 
 /**
- * Perform the actual directory scan and upsert into pt_page_style.
+ * Perform the actual directory scan and upsert into pt_patterns.
  * Internal worker; prefer scanStylePackages() which includes caching.
  */
 function doScanStylePackages(PDO $pdo, string $baseDir): void {
@@ -115,7 +115,7 @@ function doScanStylePackages(PDO $pdo, string $baseDir): void {
         }
 
         $upsert = $pdo->prepare("
-            INSERT INTO pt_page_style (name, description, version, author, entry_css, thumbnail)
+            INSERT INTO pt_patterns (name, description, version, author, entry_css, thumbnail)
             VALUES (?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE
                 description = VALUES(description),

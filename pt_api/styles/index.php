@@ -17,7 +17,7 @@ try {
     $forceRescan = !empty($_GET['rescan']);
     scanStylePackages($pdo, $forceRescan);
 
-    $stmt = $pdo->query("SELECT id, name, description, version, author, entry_css, thumbnail FROM pt_page_style ORDER BY id ASC");
+    $stmt = $pdo->query("SELECT id, name, description, version, author, entry_css, thumbnail FROM pt_patterns ORDER BY id ASC");
     $styles = $stmt ? $stmt->fetchAll() : [];
 
     foreach ($styles as &$style) {
