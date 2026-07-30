@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm -C pt_frontend dev",
+    "build": "pnpm -C pt_frontend build",
     "build:frontend": "pnpm -C pt_frontend build",
     "package": "node scripts/package.js"
   }
