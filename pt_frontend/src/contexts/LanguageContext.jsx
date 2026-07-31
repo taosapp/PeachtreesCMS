@@ -1,20 +1,20 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useTheme } from './ThemeContext'
-import { publicUrl } from '../utils/path'
+import { languageUrl } from '../utils/path'
 
 const LanguageContext = createContext(null)
 
 export function LanguageProvider({ children }) {
   const { siteOptions, loading: themeLoading } = useTheme()
   
-  // 默认使用简体中文
+  // Default to Simplified Chinese
   const [language, setLanguage] = useState('zh-CN')
   const [translations, setTranslations] = useState({})
   const [loading, setLoading] = useState(true)
 
   const loadLanguage = useCallback(async (langCode) => {
     try {
-      const response = await fetch(publicUrl(`/languages/${langCode}.json`))
+      const response = await fetch(languageUrl(langCode))
       if (!response.ok) throw new Error(`Failed to load ${langCode}`)
       const data = await response.json()
       setTranslations(prev => ({ ...prev, [langCode]: data }))
@@ -23,19 +23,16 @@ export function LanguageProvider({ children }) {
     }
   }, [])
 
-  // 当 siteOptions 加载完成后，使用站点默认语言
+  // After siteOptions is loaded, use the site default language
   useEffect(() => {
     if (themeLoading) return
     
     const siteLang = siteOptions?.default_lang || 'zh-CN'
     
     const applyLanguage = async () => {
-      // 加载站点默认语言
-      await loadLanguage(siteLang)
-      
-      // 也加载另一种语言作为备用
+      // 并行加载站点默认语言 + 回退语言（减少首屏等待）
       const otherLang = siteLang === 'zh-CN' ? 'en-US' : 'zh-CN'
-      await loadLanguage(otherLang)
+      await Promise.all([loadLanguage(siteLang), loadLanguage(otherLang)])
       
       setLanguage(siteLang)
       setLoading(false)

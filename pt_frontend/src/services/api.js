@@ -2,25 +2,37 @@ import axios from 'axios'
 
 // 动态获取 API 基础 URL 的辅助函数
 export const getApiBaseURL = () => {
-  // 1. 如果是本地开发环境 (pnpm dev)，使用环境变量，若无则回退至默认开发路径 '/PeachtreesCMS/pt_api/'
+  // 1. 本地开发环境（pnpm dev）：使用环境变量，否则回退到默认开发路径 '/PeachtreesCMS/pt_api/'
   if (import.meta.env.DEV) {
     return import.meta.env.VITE_API_BASE_URL || '/PeachtreesCMS/pt_api/';
   }
-  
-  // 2. 生产打包环境下，为了实现“一处构建，到处运行”，采用动态路径自适应推导
-  const path = window.location.pathname;
-  const dir = path.substring(0, path.lastIndexOf('/'));
-  return `${dir}/pt_api/`.replace(/\/+/g, '/');
+
+  // 2. 生产环境（“构建一次，到处运行”）：从当前页面路径自动推导
+  //    兼容 /blog/index.html、/blog/、/blog 三种 URL 形态
+  let path = window.location.pathname;
+  // 去掉文件名部分（/blog/index.html -> /blog）
+  if (/[^/]+\.[^/]+$/.test(path)) {
+    path = path.replace(/[^/]+\.[^/]+$/, '');
+  }
+  // 去掉末尾斜杠（/blog/ -> /blog）
+  path = path.replace(/\/+$/, '');
+  return `${path}/pt_api/`.replace(/\/+/g, '/');
 }
 
 export const baseURL = getApiBaseURL()
+
+/**
+ * 拼接 API 接口地址（等价于 api.get/post 的 URL，供 fetch/原生标签等场景使用）
+ * @param {string} path - 如 '/rss.php'、'/captcha.php'
+ */
+export const apiUrl = (path) => `${baseURL.replace(/\/$/, '')}/${String(path).replace(/^\//, '')}`
 
 const api = axios.create({
   baseURL: baseURL,
   withCredentials: true
 })
 
-// 响应拦截器
+// Response interceptor
 api.interceptors.response.use(
   response => response.data,
   error => {
@@ -29,7 +41,7 @@ api.interceptors.response.use(
   }
 )
 
-// 认证 API
+// Authentication API
 export const authAPI = {
   login: (username, password) =>
     api.post('/auth/login.php', { username, password }),
@@ -39,7 +51,7 @@ export const authAPI = {
     api.get('/auth/check.php')
 }
 
-// 文章 API
+// Post API
 export const postsAPI = {
   getList: (params = {}) =>
     api.get('/posts/index.php', { params }),
@@ -61,7 +73,7 @@ export const postsAPI = {
     api.put('/posts/batch-toggle.php', { ids, active })
 }
 
-// 标签 API
+// Tag API
 export const tagsAPI = {
   getList: () =>
     api.get('/tags/index.php'),
@@ -73,7 +85,7 @@ export const tagsAPI = {
     api.delete('/tags/delete.php', { data: { id } })
 }
 
-// 用户 API
+// User API
 export const usersAPI = {
   getList: () =>
     api.get('/users/index.php'),
@@ -87,7 +99,7 @@ export const usersAPI = {
     api.delete('/users/delete.php', { data: { id } })
 }
 
-// 评论 API
+// Comment API
 export const commentsAPI = {
   getList: (params = {}) =>
     api.get('/comments/index.php', { params }),
@@ -105,7 +117,7 @@ export const commentsAPI = {
     api.delete('/comments/delete.php', { data: { id } })
 }
 
-// 主题 API
+// Theme API
 export const themesAPI = {
   getList: () =>
     api.get('/themes/index.php'),
@@ -115,13 +127,13 @@ export const themesAPI = {
     api.put('/themes/set-active.php', data)
 }
 
-// 页面风格 API
+// Page style API
 export const stylesAPI = {
   getList: () =>
     api.get('/styles/index.php')
 }
 
-// 设置 API
+// Option API
 export const optionsAPI = {
   get: () =>
     api.get('/options/index.php'),
@@ -129,7 +141,7 @@ export const optionsAPI = {
     api.post('/options/update.php', data)
 }
 
-// 数据导入导出 API
+// Data import/export API
 export const dataAPI = {
   importWxr: (formData) =>
     api.post('/data/import.php', formData, {
@@ -139,7 +151,7 @@ export const dataAPI = {
     })
 }
 
-// 插件 API
+// Plugin API
 export const pluginsAPI = {
   getList: () =>
     api.get('/plugins/index.php'),
@@ -147,7 +159,7 @@ export const pluginsAPI = {
     api.post('/plugins/update.php', data)
 }
 
-// 媒体 API
+// Media API
 export const mediaAPI = {
   getList: () =>
     api.get('/media/index.php'),

@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react'
 import { mediaAPI } from '../../services/api'
-import { publicUrl } from '../../utils/path'
+import { uploadUrl } from '../../utils/path'
 import { useLanguage } from '../../contexts/LanguageContext'
 
 export default function MediaModal({ isOpen, onClose, onSelect }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(false)
-  const [selected, setSelected] = useState(new Set())
+  // Store ordered selection: array of paths in selection order
+  const [selectedOrder, setSelectedOrder] = useState([])
   const { lang } = useLanguage()
 
   useEffect(() => {
-    if (isOpen) loadMedia()
+    if (isOpen) {
+      loadMedia()
+      // Reset selection when modal opens
+      setSelectedOrder([])
+    }
   }, [isOpen])
 
   const loadMedia = async () => {
@@ -27,48 +32,112 @@ export default function MediaModal({ isOpen, onClose, onSelect }) {
     }
   }
 
-  const handleUpload = async (e) => {
-    const files = Array.from(e.target.files)
-    const formData = new FormData()
-    files.forEach(f => formData.append('files[]', f))
-    try {
-      await mediaAPI.upload(formData)
-      loadMedia()
-    } catch (err) {
-      alert(err.message)
-    }
+  const toggleSelect = (path) => {
+    setSelectedOrder(prev => {
+      const idx = prev.indexOf(path)
+      if (idx >= 0) {
+        // Remove from selection
+        return prev.filter(p => p !== path)
+      } else {
+        // Add to end of selection
+        return [...prev, path]
+      }
+    })
+  }
+
+  const getSelectionIndex = (path) => {
+    return selectedOrder.indexOf(path) + 1 // 1-based index
+  }
+
+  const isSelected = (path) => selectedOrder.includes(path)
+
+  const handleConfirm = () => {
+    onSelect(selectedOrder)
+    onClose()
   }
 
   if (!isOpen) return null
 
   return (
     <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-      <div className="modal-dialog modal-lg">
+      <div className="modal-dialog modal-lg modal-dialog-scrollable">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">{lang('mediaLibrary')}</h5>
+            <h5 className="modal-title">
+              {lang('mediaLibrary')}
+              {selectedOrder.length > 0 && (
+                <span className="badge bg-primary ms-2">
+                  {lang('mediaSelected').replace('{count}', selectedOrder.length)}
+                </span>
+              )}
+            </h5>
             <button type="button" className="btn-close" onClick={onClose}></button>
           </div>
-          <div className="modal-body" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-            <input type="file" className="form-control mb-3" multiple onChange={handleUpload} />
-            <div className="row g-2">
-              {items.map(item => (
-                <div key={item.path} className="col-3">
-                  <div className={`card ${selected.has(item.path) ? 'border-primary' : ''}`} onClick={() => {
-                    const next = new Set(selected)
-                    if (next.has(item.path)) next.delete(item.path)
-                    else next.add(item.path)
-                    setSelected(next)
-                  }}>
-                    <img src={publicUrl(item.path)} className="card-img-top" style={{ height: 80, objectFit: 'cover' }} />
-                  </div>
+          <div className="modal-body">
+            {loading ? (
+              <div className="text-center py-4">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="row g-2">
+                {items.map(item => {
+                  const selected = isSelected(item.path)
+                  const orderNum = getSelectionIndex(item.path)
+                  return (
+                    <div key={item.path} className="col-3 col-sm-2">
+                      <div
+                        className={`card position-relative cursor-pointer media-select-card ${selected ? 'border-primary border-2' : ''}`}
+                        onClick={() => toggleSelect(item.path)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <img
+                          src={uploadUrl(item.url || item.path)}
+                          className="card-img-top"
+                          alt={item.path}
+                          style={{
+                            height: 90,
+                            objectFit: 'cover',
+                            filter: selected ? 'brightness(0.85)' : 'none'
+                          }}
+                        />
+                        {selected && (
+                          <div
+                            className="position-absolute top-0 end-0 m-1 d-flex align-items-center justify-content-center"
+                            style={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: '50%',
+                              backgroundColor: '#0d6efd',
+                              color: 'white',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            }}
+                          >
+                            {orderNum}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" onClick={onClose}>{lang('cancel')}</button>
-            <button type="button" className="btn btn-primary" onClick={() => { onSelect(Array.from(selected)); onClose(); }}>{lang('confirm')}</button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleConfirm}
+              disabled={selectedOrder.length === 0}
+            >
+              <i className="bi bi-check-lg me-1"></i>
+              {lang('confirm')}
+              {selectedOrder.length > 0 && ` (${selectedOrder.length})`}
+            </button>
           </div>
         </div>
       </div>

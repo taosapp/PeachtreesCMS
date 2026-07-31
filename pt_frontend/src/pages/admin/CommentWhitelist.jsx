@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { commentsAPI } from '../../services/api'
 import Pager from '../../components/Pager'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { toast } from '../../utils/toast'
 
 const STATUS_BADGE = {
   trusted: 'bg-success',
@@ -48,7 +49,7 @@ export default function CommentWhitelist() {
         setPagination(res.data.pagination || { page: 1, total_pages: 1 })
       }
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     } finally {
       setLoading(false)
     }
@@ -63,7 +64,7 @@ export default function CommentWhitelist() {
   const handleSetStatus = async (e) => {
     e.preventDefault()
     if (!form.email.trim()) {
-      alert(lang('enterCommentEmail'))
+      toast(lang('enterCommentEmail'), 'error')
       return
     }
     setSaving(true)
@@ -76,9 +77,9 @@ export default function CommentWhitelist() {
       })
       await loadWhitelist()
       setForm(prev => ({ ...prev, reason: '', expires_at: '' }))
-      alert(lang('whitelistStatusUpdated'))
+      toast(lang('whitelistStatusUpdated'), 'success')
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     } finally {
       setSaving(false)
     }
@@ -90,7 +91,7 @@ export default function CommentWhitelist() {
       await commentsAPI.setWhitelist({ email, status })
       await loadWhitelist()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     } finally {
       setSaving(false)
     }

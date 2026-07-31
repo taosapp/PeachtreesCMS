@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { commentsAPI, postsAPI } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
 import Pager from '../../components/Pager'
+import { toast } from '../../utils/toast'
 
 export default function Comments() {
   const [comments, setComments] = useState([])
@@ -75,7 +76,7 @@ export default function Comments() {
       await commentsAPI.approve({ id, status })
       loadComments()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 
@@ -86,7 +87,7 @@ export default function Comments() {
       await commentsAPI.delete(id)
       loadComments()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 
@@ -126,7 +127,7 @@ export default function Comments() {
       setSelectedIds(new Set())
       loadComments()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     } finally {
       setBatchLoading(false)
     }
@@ -167,7 +168,7 @@ export default function Comments() {
       {/* Batch actions */}
       {selectedIds.size > 0 && (
         <div className="d-flex align-items-center gap-2 mb-3">
-          <span className="text-muted small">{selectedIds.size} 条</span>
+          <span className="text-muted small">{lang('selectedCount').replace('{count}', selectedIds.size)}</span>
           <button
             className="btn btn-sm btn-success"
             onClick={() => handleBatchSetStatus(1)}
@@ -266,7 +267,7 @@ export default function Comments() {
                               {post.title}
                             </Link>
                             {post.active != 1 && (
-                              <span className="badge bg-secondary" style={{ fontSize: '0.65rem' }}>{lang('unpublish')}</span>
+                              <span className="badge bg-secondary">{lang('unpublish')}</span>
                             )}
                           </span>
                         ) : post === null ? (

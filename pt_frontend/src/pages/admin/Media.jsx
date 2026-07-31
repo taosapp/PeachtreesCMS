@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { mediaAPI } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
-import { publicUrl } from '../../utils/path'
+import { uploadUrl } from '../../utils/path'
+import { toast } from '../../utils/toast'
 
 function formatSize(bytes) {
   if (!Number.isFinite(bytes)) return '-'
@@ -85,7 +86,7 @@ export default function Media() {
       await mediaAPI.delete(file.path)
       setFiles((prev) => prev.filter((item) => item.path !== file.path))
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 
@@ -109,19 +110,20 @@ export default function Media() {
   }
 
   const renderPreview = (file) => {
+    const src = uploadUrl(file.url || file.path)
     if (file.type === 'image') {
-      return <img src={publicUrl(file.url)} alt={file.path} className="media-thumb" />
+      return <img src={src} alt={file.path} className="media-thumb" />
     }
     if (file.type === 'video') {
       return (
-        <video className="media-thumb" controls src={publicUrl(file.url)}>
+        <video className="media-thumb" controls src={src}>
           {lang('loading')}
         </video>
       )
     }
     if (file.type === 'audio') {
       return (
-        <audio className="media-audio" controls src={publicUrl(file.url)}>
+        <audio className="media-audio" controls src={src}>
           {lang('loading')}
         </audio>
       )
@@ -195,9 +197,9 @@ export default function Media() {
           >
             <option value="all">{lang('mediaFilterAll')}</option>
             {monthOptions.map((month) => {
-              const label = lang('mediaFilterMonth') === 'Filter by month'
-                ? month
-                : `${month.slice(0, 4)}年${month.slice(5, 7)}月`
+              const label = lang('mediaMonthLabelFormat')
+                .replace('{year}', month.slice(0, 4))
+                .replace('{month}', month.slice(5, 7))
               return (
                 <option key={month} value={month}>
                   {label}
@@ -228,7 +230,7 @@ export default function Media() {
                     <span>{lang('lastModified')}: {file.modified_at}</span>
                   </div>
                   <div className="d-flex gap-2 flex-wrap">
-                    <a className="btn btn-outline-primary btn-sm" href={publicUrl(file.url)} target="_blank" rel="noopener noreferrer">
+                    <a className="btn btn-outline-primary btn-sm" href={uploadUrl(file.url || file.path)} target="_blank" rel="noopener noreferrer">
                       <i className="bi bi-box-arrow-up-right me-1"></i>
                       {lang('view')}
                     </a>

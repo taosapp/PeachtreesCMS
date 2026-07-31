@@ -51,7 +51,7 @@ try {
         notFound('Post not found');
     }
 
-    // 管理员后台可查看所有文章（含下架）
+    // Administrator backend can view all posts (including unpublished ones)
     $isAdmin = isAdmin();
     if ($post['active'] != 1 && !$isAdmin) {
         notFound('Post not found');

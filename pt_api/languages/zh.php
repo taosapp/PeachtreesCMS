@@ -3,7 +3,7 @@
  * PeachtreesCMS API - Chinese Language File
  */
 return [
-    // 安装向导
+    // Installation wizard
     'install.title' => 'PeachtreesCMS 安装向导',
     'install.language' => '语言',
     'install.hint' => '请先创建数据库，然后继续安装。',
@@ -36,7 +36,7 @@ return [
     'install.req_pass' => '环境要求已满足',
     'install.req_fail' => '某些环境要求未满足，请修复后刷新重试',
     
-    // API错误 - 通用
+    // API errors - General
     'error.missing_config' => '缺少必要配置：',
     'error.db_connection' => '数据库连接失败',
     'error.method_not_allowed' => '方法不允许',
@@ -46,7 +46,7 @@ return [
     'error.server_error' => '服务器内部错误',
     'error.bad_request' => '错误请求',
     
-    // 认证消息
+    // Auth messages
     'auth.login_success' => '登录成功',
     'auth.login_failed' => '登录失败：',
     'auth.logout_success' => '已退出登录',
@@ -56,7 +56,7 @@ return [
     'auth.please_login' => '请先登录',
     'auth.admin_required' => '需要管理员权限',
     
-    // 文章消息
+    // Post messages
     'post.title_empty' => '文章标题不能为空',
     'post.category_empty' => '请选择分类',
     'post.invalid_type' => '无效的文章类型',
@@ -94,7 +94,7 @@ return [
     'post.delete_failed' => '删除文章失败',
     'post.toggle_failed' => '切换文章状态失败',
     
-    // 评论消息
+    // Comment messages
     'comment.id_invalid' => '评论ID无效',
     'comment.status_invalid' => '状态值无效',
     'comment.not_found' => '评论不存在',
@@ -119,7 +119,7 @@ return [
     'comment.list_success' => '获取评论列表成功',
     'comment.list_failed' => '获取评论列表失败',
     
-    // 白名单消息
+    // Whitelist messages
     'whitelist.not_commented' => '该邮箱尚未留言，无法设置白名单',
     'whitelist.removed' => '已移出白名单',
     'whitelist.updated' => '白名单状态已更新',
@@ -128,7 +128,7 @@ return [
     'whitelist.get_failed' => '获取白名单失败',
     'whitelist.expires_invalid' => '过期时间格式无效',
     
-    // 标签消息
+    // Tag messages
     'tag.slug_empty' => '分类标识不能为空',
     'tag.name_empty' => '分类名称不能为空',
     'tag.slug_invalid' => '分类标识只能包含字母、数字、下划线和连字符',
@@ -145,7 +145,7 @@ return [
     'tag.delete_failed_db' => '删除分类失败',
     'tag.list_failed' => '获取分类列表失败',
     
-    // 用户消息
+    // User messages
     'user.username_empty' => '用户名不能为空',
     'user.email_empty' => '邮箱不能为空',
     'user.password_empty' => '密码不能为空',
@@ -168,13 +168,13 @@ return [
     'user.password_changed' => '密码修改成功',
     'user.password_change_failed' => '修改密码失败',
     
-    // 设置消息
+    // Settings messages
     'settings.get_failed' => '获取设置失败',
     'settings.data_invalid' => '无效的设置数据',
     'settings.saved' => '设置保存成功',
     'settings.save_failed' => '保存设置失败',
     
-    // 上传消息
+    // Upload messages
     'upload.no_file' => '未接收到上传文件，请检查是否选择了文件或单个文件是否过大。',
     'upload.content_too_large' => '上传内容太大，超过了服务器限制。请减少图片数量或压缩图片后再试。',
     'upload.directory_not_writable' => '上传目录不可写，请检查上传目录权限',
@@ -194,14 +194,14 @@ return [
     'upload.media_failed' => '文件上传失败',
     'upload.media_unsupported' => '仅支持指定的媒体文件格式',
     
-    // 媒体消息
+    // Media messages
     'media.path_missing' => '缺少文件路径',
     'media.path_invalid' => '文件路径无效',
     'media.file_not_found' => '文件不存在',
     'media.delete_failed' => '删除失败',
     'media.deleted' => '删除成功',
     
-    // 主题消息
+    // Theme messages
     'theme.slug_invalid' => '主题标识无效',
     'theme.not_found' => '主题不存在，请将主题包放入 public/theme 目录',
     'theme.layout_invalid' => '布局配置格式无效',
@@ -214,14 +214,14 @@ return [
     'theme.active_failed' => '获取当前主题失败',
     'theme.no_active' => '没有激活的主题',
     
-    // 插件消息
+    // Plugin messages
     'plugin.load_failed' => '加载插件失败',
     'plugin.status_invalid' => '启用状态值无效',
     'plugin.slug_invalid' => '插件标识无效',
     'plugin.update_failed' => '更新插件状态失败',
     'plugin.status_updated' => '插件状态已更新',
     
-    // 邮件发布消息
+    // Mail publish messages
     'mail.secret_not_configured' => '邮件发布密钥未配置',
     'mail.invalid_signature' => '签名无效',
     'mail.invalid_token' => '令牌无效',
@@ -234,7 +234,7 @@ return [
     'mail.image_only' => '仅支持 jpg/png/webp/gif 图片附件',
     'mail.save_attachment_failed' => '保存附件失败',
     
-    // 数据消息
+    // Data messages
     'data.export_failed' => '导出失败',
     'data.import_failed' => '导入失败',
     'data.import_invalid' => '导入数据无效',

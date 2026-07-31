@@ -212,6 +212,12 @@ body {
   height: auto;
 }
 
+.article-detail .content video,
+.article-detail .content audio {
+  max-width: 100%;
+  height: auto;
+}
+
 .article-detail .content pre {
   background-color: #f8f9fa;
   padding: 1rem;

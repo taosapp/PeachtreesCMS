@@ -11,7 +11,7 @@ export default function TiptapSimpleEditor({ value, onChange }) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        // 禁用不需要的标记
+        // Disable unwanted marks
         code: false,
         codeBlock: false,
         blockquote: false,
@@ -128,7 +128,6 @@ export default function TiptapSimpleEditor({ value, onChange }) {
               rows="5"
               value={sourceCode}
               onChange={(e) => setSourceCode(e.target.value)}
-              style={{ fontSize: '0.875rem' }}
             />
             <div className="mt-2 d-flex gap-2">
               <button

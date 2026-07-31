@@ -129,7 +129,7 @@ try {
 
         $saved[] = [
             'path' => $relativePath,
-            'url' => '/' . $relativePath
+            'url' => $relativePath
         ];
     }
 

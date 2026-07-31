@@ -132,6 +132,10 @@ if (!empty($styleDir)) {
 define('STYLE_DIR', $styleDir);
 
 // Upload URL configuration
+// ⚠️ DEPRECATED (historical only): since the path convention update, backend APIs
+// return SITE-RELATIVE paths (e.g. upload/2026/04/x.jpg) and the frontend converts
+// them via pt_frontend/src/utils/path.js. Do NOT use UPLOAD_URL / UPLOAD_URL_BASE
+// to build absolute upload URLs anymore.
 // For shared hosting in subdirectory, set UPLOAD_URL_BASE environment variable
 // Example: /PeachtreesCMS/upload/
 $uploadUrlBase = $_ENV['UPLOAD_URL_BASE'] ?? '';

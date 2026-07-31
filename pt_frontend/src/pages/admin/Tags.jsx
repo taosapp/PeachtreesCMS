@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { tagsAPI, stylesAPI } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { toast } from '../../utils/toast'
 
 export default function Tags() {
   const [tags, setTags] = useState([])
@@ -43,7 +44,7 @@ export default function Tags() {
   const handleAdd = async (e) => {
     e.preventDefault()
     if (!form.tag || !form.display_name) {
-      alert(lang('required'))
+      toast(lang('required'), 'error')
       return
     }
 
@@ -52,7 +53,7 @@ export default function Tags() {
       setForm({ tag: '', display_name: '', page_style: '' })
       loadTags()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 
@@ -65,7 +66,7 @@ export default function Tags() {
       setEditingId(null)
       loadTags()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 
@@ -76,7 +77,7 @@ export default function Tags() {
       await tagsAPI.delete(id)
       loadTags()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 

@@ -1,18 +1,41 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { STATIC_DIRS } from './src/constants.js'
 
 export default defineConfig(({ mode }) => {
-  // 加载当前模式下的环境变量
+  // Load environment variables of the current mode
   const env = loadEnv(mode, process.cwd(), '')
-  
-  // 获取开发环境 API 基础前缀，默认值为 '/PeachtreesCMS/pt_api/'
+
+  // Development API base prefix, default: '/PeachtreesCMS/pt_api/'
   const apiBaseUrl = env.VITE_API_BASE_URL || '/PeachtreesCMS/pt_api/'
-  
-  // 派生出上传文件夹、主题文件夹和页面风格(pattern)文件夹的代理前缀
-  // 例如：'/PeachtreesCMS/pt_api/' -> '/PeachtreesCMS/upload/', '/PeachtreesCMS/theme/', '/PeachtreesCMS/pattern/'
-  const uploadBaseUrl = apiBaseUrl.replace('pt_api/', 'upload/')
-  const themeBaseUrl = apiBaseUrl.replace('pt_api/', 'theme/')
-  const patternBaseUrl = apiBaseUrl.replace('pt_api/', 'pattern/')
+
+  // Derive site root prefix from apiBaseUrl, e.g., '/PeachtreesCMS/pt_api/' -> '/PeachtreesCMS/'
+  // All static resources (upload/theme/pattern/languages/imgs) are under the site root
+  const siteBasePrefix = apiBaseUrl.replace(/pt_api\/?$/, '') // => '/PeachtreesCMS/'
+
+  // General proxy config factory
+  const createProxy = () => ({
+    target: 'http://localhost',
+    changeOrigin: true
+  })
+
+  // 由 src/constants.js 的 STATIC_DIRS 统一生成各静态资源代理：
+  //   1) 带站点前缀的代理（/PeachtreesCMS/upload|theme|pattern/ -> http://localhost 同路径）
+  //   2) 无前缀兼容重写（/upload|theme|pattern -> 站点前缀路径，供编辑器内容里保存的相对路径使用）
+  // 新增静态资源目录只需改 src/constants.js。
+  const staticProxies = {}
+  for (const dir of STATIC_DIRS) {
+    const baseUrl = siteBasePrefix + dir + '/'
+    staticProxies[baseUrl] = createProxy()
+    staticProxies[`^/${dir}`] = {
+      target: 'http://localhost',
+      changeOrigin: true,
+      rewrite: (path) => {
+        // /upload/2026/07/xxx.jpg -> /PeachtreesCMS/upload/2026/07/xxx.jpg
+        return baseUrl.replace(/\/$/, '') + path.substring(dir.length + 1)
+      }
+    }
+  }
 
   return {
     plugins: [react()],
@@ -20,7 +43,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       proxy: {
-        // API 代理：[apiBaseUrl] -> http://localhost[apiBaseUrl]
+        // API proxy
         [apiBaseUrl]: {
           target: 'http://localhost',
           changeOrigin: true,
@@ -32,53 +55,39 @@ export default defineConfig(({ mode }) => {
             })
           }
         },
-        // 上传文件代理
-        [uploadBaseUrl]: {
-          target: 'http://localhost',
-          changeOrigin: true
-        },
-        // 主题资源代理
-        [themeBaseUrl]: {
-          target: 'http://localhost',
-          changeOrigin: true
-        },
-        // 风格模板资源代理
-        [patternBaseUrl]: {
-          target: 'http://localhost',
-          changeOrigin: true
-        }
+        ...staticProxies
       }
     },
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        home: 'index.html',
-        admin: 'admin.html'
-      },
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            // React 核心库单独分块
-            if (['react', 'react-dom', 'react-router-dom'].some(pkg => id.includes(pkg))) {
-              return 'react-vendor'
-            }
-            // Tiptap 编辑器相关
-            if (id.includes('@tiptap')) {
-              return 'tiptap'
-            }
-            // Swiper
-            if (id.includes('swiper')) {
-              return 'swiper'
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+      rollupOptions: {
+        input: {
+          home: 'index.html',
+          admin: 'admin.html'
+        },
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              // Separate React core library chunk
+              if (['react', 'react-dom', 'react-router-dom'].some(pkg => id.includes(pkg))) {
+                return 'react-vendor'
+              }
+              // Tiptap editor related
+              if (id.includes('@tiptap')) {
+                return 'tiptap'
+              }
+              // Swiper
+              if (id.includes('swiper')) {
+                return 'swiper'
+              }
             }
           }
         }
-      }
-    },
-    // 启用代码分割
-    target: 'esnext',
-    cssCodeSplit: true
+      },
+      // Enable code splitting
+      target: 'esnext',
+      cssCodeSplit: true
+    }
   }
-}
 })

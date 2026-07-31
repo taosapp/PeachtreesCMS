@@ -36,7 +36,7 @@ return [
     'install.req_pass' => '環境要件を満たしています',
     'install.req_fail' => '一部の環境要件が満たされていません。修正した後にリロードして再試行してください。',
     
-    // APIエラー - 共通 (API errors - General)
+    // API errors - General
     'error.missing_config' => '必要な設定が不足しています：',
     'error.db_connection' => 'データベース接続に失敗しました',
     'error.method_not_allowed' => 'メソッドが許可されていません',
@@ -46,7 +46,7 @@ return [
     'error.server_error' => 'サーバー内部エラー',
     'error.bad_request' => '不正なリクエスト',
     
-    // 認証メッセージ (Auth messages)
+    // Auth messages
     'auth.login_success' => 'ログインに成功しました',
     'auth.login_failed' => 'ログイン失敗：',
     'auth.logout_success' => 'ログアウトしました',
@@ -56,7 +56,7 @@ return [
     'auth.please_login' => 'ログインしてください',
     'auth.admin_required' => '管理者権限が必要です',
     
-    // 記事メッセージ (Post messages)
+    // Post messages
     'post.title_empty' => '記事のタイトルは空にできません',
     'post.category_empty' => 'カテゴリーを選択してください',
     'post.invalid_type' => '無効な記事タイプです',
@@ -164,7 +164,7 @@ return [
     'user.password_changed' => 'パスワードが変更されました',
     'user.password_change_failed' => 'パスワードの変更に失敗しました',
     
-    // 設定メッセージ (Settings messages)
+    // Settings messages
     'settings.get_failed' => '設定の取得に失敗しました',
     'settings.data_invalid' => '無効な設定データです',
     'settings.saved' => '設定が保存されました',
@@ -217,7 +217,7 @@ return [
     'plugin.update_failed' => 'プラグイン状態の更新に失敗しました',
     'plugin.status_updated' => 'プラグインの状態が更新されました',
     
-    // メール投稿メッセージ (Mail publish messages)
+    // Mail publish messages
     'mail.secret_not_configured' => 'メール投稿のシークレットキーが設定されていません',
     'mail.invalid_signature' => '署名が無効です',
     'mail.invalid_token' => 'トークンが無効です',

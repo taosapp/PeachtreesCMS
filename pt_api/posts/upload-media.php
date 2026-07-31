@@ -103,7 +103,7 @@ try {
 
     success([
         'path' => $relativePath,
-        'url' => UPLOAD_URL . $relativeDir . '/' . $filename
+        'url' => $relativePath
     ], 'Upload successful');
 } catch (Exception $e) {
     serverError('Upload failed: ' . $e->getMessage());

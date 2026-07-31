@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { pluginsAPI } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { toast } from '../../utils/toast'
 
 export default function Plugins() {
   const { lang, language } = useLanguage()
@@ -34,7 +35,7 @@ export default function Plugins() {
         setPlugins(prev => prev.map(p => (p.slug === slug ? { ...p, enabled: res.data.enabled } : p)))
       }
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     } finally {
       setSaving(prev => ({ ...prev, [slug]: false }))
     }

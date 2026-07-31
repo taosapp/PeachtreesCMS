@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { optionsAPI, tagsAPI } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { toast } from '../../utils/toast'
 
 export default function MailPublish() {
   const { lang } = useLanguage()
@@ -36,7 +37,7 @@ export default function MailPublish() {
         }
       } catch (err) {
         console.error('Failed to load mail publish settings:', err)
-        alert(lang('mailPublishLoadFailed'))
+        toast(lang('mailPublishLoadFailed'), 'error')
       } finally {
         setLoading(false)
       }
@@ -58,9 +59,9 @@ export default function MailPublish() {
         mail_publish_whitelist: form.whitelist.trim(),
         mail_publish_default_tag: form.defaultTag.trim()
       })
-      alert(lang('mailPublishSaved'))
+      toast(lang('mailPublishSaved'), 'success')
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     } finally {
       setSaving(false)
     }

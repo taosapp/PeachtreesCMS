@@ -7,7 +7,8 @@ import Link from '@tiptap/extension-link'
 import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { mediaAPI } from '../../services/api'
-import { publicUrl } from '../../utils/path'
+import { uploadUrl } from '../../utils/path'
+import { toast } from '../../utils/toast'
 
 const Video = Node.create({
   name: 'video',
@@ -173,7 +174,7 @@ export default function TiptapEditor({ value, onChange, onUploadImage, onUploadV
       }
     } catch (err) {
       console.error('Failed to upload media:', err)
-      alert(err.message || lang('uploadFailed'))
+      toast(err.message || lang('uploadFailed'), 'error')
     } finally {
       setUploadingMedia(false)
     }
@@ -236,7 +237,7 @@ export default function TiptapEditor({ value, onChange, onUploadImage, onUploadV
         setMediaPage(1)
       }
     } catch (err) {
-      alert(err.message || lang('uploadFailed'))
+      toast(err.message || lang('uploadFailed'), 'error')
     } finally {
       setMediaUploading(false)
       event.target.value = ''
@@ -377,7 +378,6 @@ export default function TiptapEditor({ value, onChange, onUploadImage, onUploadV
               rows="8"
               value={sourceCode}
               onChange={(e) => setSourceCode(e.target.value)}
-              style={{ fontSize: '0.875rem' }}
             />
             <div className="mt-2 d-flex gap-2">
               <button
@@ -437,13 +437,13 @@ export default function TiptapEditor({ value, onChange, onUploadImage, onUploadV
                   {modalFiles.items.map((file) => (
                     <div className="card h-100 shadow-sm" key={file.path}>
                       <div className="media-preview">
-                        {file.type === 'image' && <img src={publicUrl(file.url)} alt={file.path} className="media-thumb" />}
-                        {file.type === 'video' && <video className="media-thumb" controls src={publicUrl(file.url)} />}
-                        {file.type === 'audio' && <audio className="media-audio" controls src={publicUrl(file.url)} />}
+                        {file.type === 'image' && <img src={uploadUrl(file.url || file.path)} alt={file.path} className="media-thumb" />}
+                        {file.type === 'video' && <video className="media-thumb" controls src={uploadUrl(file.url || file.path)} />}
+                        {file.type === 'audio' && <audio className="media-audio" controls src={uploadUrl(file.url || file.path)} />}
                       </div>
                       <div className="card-body">
                         <div className="text-break small mb-2">{file.path}</div>
-                        <button className="btn btn-sm btn-outline-primary" onClick={() => insertMedia(publicUrl(file.url))}>
+                        <button className="btn btn-sm btn-outline-primary" onClick={() => insertMedia(file.url || file.path)}>
                           <i className="bi bi-check2 me-1"></i>
                           {lang('mediaInsert')}
                         </button>

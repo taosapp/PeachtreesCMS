@@ -19,6 +19,8 @@ Thumbs.db
 pt_api/sessions/*
 
 # Environment (contains real credentials — never commit)
+pt_frontend/.env
+pt_frontend/.env.local
 pt_api/.env
 pt_api/.env.local
 

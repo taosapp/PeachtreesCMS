@@ -5,6 +5,7 @@ import { useLanguage } from '../../contexts/LanguageContext'
 import { useAuth } from '../../contexts/AuthContext'
 import Pager from '../../components/Pager'
 import { publicUrl } from '../../utils/path'
+import { toast } from '../../utils/toast'
 
 export default function PostList() {
   const [posts, setPosts] = useState([])
@@ -76,7 +77,7 @@ export default function PostList() {
       await postsAPI.delete(id)
       loadPosts()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 
@@ -85,7 +86,7 @@ export default function PostList() {
       await postsAPI.toggleActive(id)
       loadPosts()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 
@@ -127,7 +128,7 @@ export default function PostList() {
       setSelectedIds(new Set())
       loadPosts()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     } finally {
       setBatchLoading(false)
     }
@@ -168,7 +169,7 @@ export default function PostList() {
         {/* Batch actions */}
         {selectedIds.size > 0 && (
           <div className="d-flex align-items-center gap-2 ms-auto">
-            <span className="text-muted small">{selectedIds.size} 篇</span>
+            <span className="text-muted small">{lang('postsCountSelected').replace('{count}', selectedIds.size)}</span>
             <button
               className="btn btn-sm btn-warning"
               onClick={handleBatchUnpublish}
@@ -246,7 +247,7 @@ export default function PostList() {
                           <span className="badge bg-dark ms-2">big-picture</span>
                         )}
                         {post.slug && (
-                          <span className="badge bg-light text-secondary ms-2" style={{ fontSize: '0.75rem' }}>
+                          <span className="badge bg-light text-secondary ms-2">
                             {post.slug}
                           </span>
                         )}
@@ -259,7 +260,7 @@ export default function PostList() {
                       </td>
                       <td className="align-middle text-center">
                         {!allowed ? (
-                          <span className="text-muted small border border-light p-1 bg-white rounded shadow-2xs" title="属于其他作者的文章，您无权编辑">
+                          <span className="text-muted small border border-light p-1 bg-white rounded shadow-2xs" title={lang('readOnlyTitle')}>
                             <i className="bi bi-lock-fill text-secondary me-1"></i>
                             {lang('readOnly')}
                           </span>

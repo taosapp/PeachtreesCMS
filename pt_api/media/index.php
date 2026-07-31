@@ -45,8 +45,8 @@ foreach ($iterator as $file) {
     $type = in_array($ext, $imageExts, true) ? 'image' : (in_array($ext, $videoExts, true) ? 'video' : 'audio');
 
     $files[] = [
-        'path' => '/upload/' . $relativePath,
-        'url' => '/upload/' . $relativePath,
+        'path' => 'upload/' . $relativePath,
+        'url' => 'upload/' . $relativePath,
         'type' => $type,
         'size' => $file->getSize(),
         'modified_at' => date('Y-m-d H:i:s', $file->getMTime())

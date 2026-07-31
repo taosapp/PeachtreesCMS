@@ -46,8 +46,12 @@ function makeEnv(array $config): string {
     $lines[] = '# JWT Secret (must be changed to a strong random string)';
     $lines[] = 'JWT_SECRET=' . $config['JWT_SECRET'];
     $lines[] = '';
-    $lines[] = '# Upload directory (optional, leave empty for default)';
+    $lines[] = '# Upload directory (optional, leave empty for default; absolute path or relative to project root)';
     $lines[] = 'UPLOAD_DIR=';
+    $lines[] = '';
+    $lines[] = '# Theme / pattern directories (optional, leave empty for default)';
+    $lines[] = 'THEME_DIR=';
+    $lines[] = 'STYLE_DIR=';
     return implode(PHP_EOL, $lines) . PHP_EOL;
 }
 
@@ -147,7 +151,7 @@ function testConnection(array $cfg): array {
 function checkRequirements(): array {
     $checks = [];
     
-    // PHP 版本
+    // PHP version
     $checks[] = [
         'key' => 'install.req_php_version',
         'pass' => version_compare(PHP_VERSION, '8.1.0', '>='),
@@ -168,7 +172,7 @@ function checkRequirements(): array {
         'detail' => extension_loaded('fileinfo') ? 'enabled' : 'missing'
     ];
     
-    // pt_api/ 可写
+    // pt_api/ writable
     $apiDir = __DIR__;
     $checks[] = [
         'key' => 'install.req_writable_api',
@@ -176,7 +180,7 @@ function checkRequirements(): array {
         'detail' => $apiDir
     ];
     
-    // upload/ 可写
+    // upload/ writable
     $uploadDir = dirname(__DIR__) . '/upload';
     $checks[] = [
         'key' => 'install.req_writable_upload',
@@ -184,7 +188,7 @@ function checkRequirements(): array {
         'detail' => $uploadDir
     ];
     
-    // theme/ 可写
+    // theme/ writable
     $themeDir = dirname(__DIR__) . '/theme';
     $checks[] = [
         'key' => 'install.req_writable_theme',
@@ -192,7 +196,7 @@ function checkRequirements(): array {
         'detail' => $themeDir
     ];
     
-    // pattern/ 可写
+    // pattern/ writable
     $patternDir = dirname(__DIR__) . '/pattern';
     $checks[] = [
         'key' => 'install.req_writable_pattern',

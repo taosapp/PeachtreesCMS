@@ -8,7 +8,7 @@ import CategoryNav from '../../components/CategoryNav'
 import Footer from '../../components/Footer'
 import Pager from '../../components/Pager'
 import { getLayoutComponent } from '../../layouts'
-import { publicUrl } from '../../utils/path'
+import { patternUrl } from '../../utils/path'
 
 export default function Home() {
   const [posts, setPosts] = useState([])
@@ -29,7 +29,7 @@ export default function Home() {
     loadPosts()
   }, [page, tag])
 
-  // 动态加载分类页面 pattern CSS
+  // Dynamically load category page pattern CSS
   useEffect(() => {
     const existing = document.getElementById('tag-pattern-css')
     if (existing) existing.remove()
@@ -37,7 +37,7 @@ export default function Home() {
     if (tag && posts.length > 0 && posts[0].tag_page_style) {
       const link = document.createElement('link')
       link.rel = 'stylesheet'
-      link.href = publicUrl(`/pattern/${posts[0].tag_page_style}/style.css`)
+      link.href = patternUrl(posts[0].tag_page_style, 'style.css')
       link.id = 'tag-pattern-css'
       document.head.appendChild(link)
     }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { usersAPI } from '../../services/api'
 import { useAuth } from '../../contexts/AuthContext'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { toast } from '../../utils/toast'
 
 export default function Users() {
   const { user: currentUser, checkAuth } = useAuth()
@@ -73,14 +74,14 @@ export default function Users() {
       
       // Clear password field
       setProfileForm(prev => ({ ...prev, password: '' }))
-      alert(lang('success'))
+      toast(lang('success'), 'success')
       
       // Refresh Auth Context to sync email/nickname globally
       if (checkAuth) {
         await checkAuth()
       }
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 
@@ -108,10 +109,10 @@ export default function Users() {
         password: editForm.password
       })
       setEditingUser(null)
-      alert(lang('success'))
+      toast(lang('success'), 'success')
       loadUsers()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 
@@ -131,7 +132,7 @@ export default function Users() {
       e.target.reset()
       loadUsers()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 
@@ -142,7 +143,7 @@ export default function Users() {
       await usersAPI.delete(id)
       loadUsers()
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     }
   }
 
@@ -166,7 +167,7 @@ export default function Users() {
                   className="form-control bg-light"
                   value={profileForm.username}
                   disabled
-                  title="用户名不能修改"
+                  title={lang('usernameReadonly')}
                 />
               </div>
               <div className="col-md-3">
@@ -195,7 +196,7 @@ export default function Users() {
                 <input
                   type="password"
                   className="form-control"
-                  placeholder="留空则保持原密码"
+                  placeholder={lang('passwordKeepPlaceholder')}
                   value={profileForm.password}
                   onChange={(e) => setProfileForm({ ...profileForm, password: e.target.value })}
                   minLength={6}
@@ -262,21 +263,21 @@ export default function Users() {
                       <input
                         type="password"
                         className="form-control"
-                        placeholder="留空则保持原密码"
+                        placeholder={lang('passwordKeepPlaceholder')}
                         value={editForm.password}
                         onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
                         minLength={6}
                       />
                     </div>
                     <div className="col-md-3">
-                      <label className="form-label">{lang('role') || '角色'}</label>
+                      <label className="form-label">{lang('role')}</label>
                       <select 
                         className="form-select"
                         value={editForm.role}
                         onChange={(e) => setEditForm({ ...editForm, role: parseInt(e.target.value) })}
                       >
-                        <option value="1">{lang('administrator') || '管理员'}</option>
-                        <option value="2">{lang('author') || '普通用户'}</option>
+                        <option value="1">{lang('administrator')}</option>
+                        <option value="2">{lang('author')}</option>
                       </select>
                     </div>
                     <div className="col-12 text-end gap-2 d-flex justify-content-end">
@@ -367,10 +368,10 @@ export default function Users() {
                       />
                     </div>
                     <div className="col-md-3">
-                      <label className="form-label">{lang('role') || '角色'}</label>
+                      <label className="form-label">{lang('role')}</label>
                       <select name="role" className="form-select" defaultValue="2">
-                        <option value="1">{lang('administrator') || '管理员'}</option>
-                        <option value="2">{lang('author') || '普通用户'}</option>
+                        <option value="1">{lang('administrator')}</option>
+                        <option value="2">{lang('author')}</option>
                       </select>
                     </div>
                     <div className="col-12 text-end gap-2 d-flex justify-content-end">
@@ -406,7 +407,7 @@ export default function Users() {
                     <tr>
                       <th>{lang('username')}</th>
                       <th>{lang('nickname')}</th>
-                      <th>{lang('role') || '角色'}</th>
+                      <th>{lang('role')}</th>
                       <th>{lang('email')}</th>
                       <th>{lang('registerTime')}</th>
                       <th>{lang('lastLogin')}</th>

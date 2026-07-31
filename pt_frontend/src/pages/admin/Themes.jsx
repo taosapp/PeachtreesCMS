@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { themesAPI } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
-import { publicUrl } from '../../utils/path'
+import { themeUrl } from '../../utils/path'
+import { toast } from '../../utils/toast'
 
 const THUMBNAIL_FILES = ['thumbnail.svg', 'thumbnail.webp', 'thumbnail.png', 'thumbnail.jpg', 'thumbnail.jpeg', 'thumbnail.gif']
 
@@ -10,7 +11,7 @@ function ThemeThumbnail({ slug, name, thumbnail }) {
   const candidates = [
     thumbnail,
     ...THUMBNAIL_FILES.filter(f => f !== thumbnail)
-  ].filter(Boolean).map((file) => publicUrl(`/theme/${encodeURIComponent(slug)}/${file}`))
+  ].filter(Boolean).map((file) => themeUrl(slug, file))
   const [index, setIndex] = useState(0)
   const [error, setError] = useState(false)
 
@@ -25,7 +26,7 @@ function ThemeThumbnail({ slug, name, thumbnail }) {
   }
 
   if (error || !src) {
-    // 显示默认占位符
+    // Show default placeholder
     return (
       <div
         className="theme-card-thumb d-flex align-items-center justify-content-center bg-light text-muted"
@@ -67,7 +68,7 @@ export default function Themes() {
         setThemes(Array.isArray(res.data.themes) ? res.data.themes : [])
       }
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     } finally {
       setLoading(false)
     }
@@ -82,7 +83,7 @@ export default function Themes() {
         await loadThemes()
       }
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     } finally {
       setSwitchingSlug('')
     }

@@ -90,6 +90,8 @@ location ~ /\. {
 
 ## 开发指南 (面向开发者)
 
+> 📁 **前端路径体系（theme / pattern / upload）请先阅读** [docs/path-architecture.md](docs/path-architecture.md)，了解前后端路径约定与开发代理原理。
+
 本工程实现了极简的工作流，允许前端独立开发、一键热更新及一键自动化发布。
 
 ### 1. 克隆项目并安装依赖

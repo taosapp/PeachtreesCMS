@@ -1,4 +1,142 @@
 /* Admin-only styles */
+
+/* ==========================================================
+   Typography — Unified Font Size Scale for Admin Panel
+   ========================================================== */
+
+/* Base font size normalization for admin area */
+:root {
+  --admin-font-size-base: 0.9375rem; /* 15px - slightly larger than default for better readability */
+  --admin-font-size-sm: 0.8125rem;   /* 13px - secondary text, captions */
+  --admin-font-size-xs: 0.75rem;     /* 12px - small badges, timestamps */
+  --admin-font-size-lg: 1.0625rem;   /* 17px - emphasized content */
+}
+
+/* Apply base font size to admin main content */
+main.p-4,
+main.p-4 .card-body,
+main.p-4 .form-control,
+main.p-4 .form-select,
+main.p-4 .btn {
+  font-size: var(--admin-font-size-base);
+}
+
+/* Headings — consistent sizing regardless of h-tag used */
+main.p-4 h1 { font-size: 1.75rem; }
+main.p-4 h2 { font-size: 1.5rem; font-weight: 600; }
+main.p-4 h3 { font-size: 1.375rem; font-weight: 600; }
+main.p-4 h4 { font-size: 1.25rem; font-weight: 600; }
+main.p-4 h5 { font-size: 1.0625rem; font-weight: 600; }
+main.p-4 h6 { font-size: 0.9375rem; font-weight: 600; }
+
+/* Form labels — unified size and weight */
+main.p-4 .form-label {
+  font-size: var(--admin-font-size-base);
+  font-weight: 600;
+  margin-bottom: 0.375rem;
+}
+
+/* Form check labels */
+main.p-4 .form-check-label {
+  font-size: var(--admin-font-size-base);
+}
+
+/* Form help/auxiliary text */
+main.p-4 .form-text,
+main.p-4 .text-muted.small,
+main.p-4 small,
+main.p-4 .small {
+  font-size: var(--admin-font-size-sm) !important;
+}
+
+/* Form inputs and selects */
+main.p-4 .form-control,
+main.p-4 .form-select {
+  font-size: var(--admin-font-size-base);
+  line-height: 1.5;
+}
+
+/* Table content */
+main.p-4 .table {
+  font-size: var(--admin-font-size-base);
+}
+
+main.p-4 .table th {
+  font-weight: 600;
+  font-size: var(--admin-font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Badges — unified small size */
+main.p-4 .badge {
+  font-size: var(--admin-font-size-xs);
+  font-weight: 500;
+  padding: 0.25em 0.5em;
+}
+
+/* Card headers */
+main.p-4 .card-header {
+  font-size: var(--admin-font-size-base);
+}
+
+main.p-4 .card-title {
+  font-weight: 600;
+}
+
+/* Navigation sidebar */
+nav.text-bg-dark .nav-link {
+  font-size: var(--admin-font-size-base);
+}
+
+nav.text-bg-dark h5 {
+  font-size: 1.0625rem;
+}
+
+/* Top navbar */
+.navbar .navbar-text,
+.navbar .btn-sm {
+  font-size: var(--admin-font-size-sm);
+}
+
+/* Sidebar section divider */
+nav.text-bg-dark .nav-item.mt-2.small {
+  font-size: 0.6875rem !important;
+  letter-spacing: 0.05em;
+}
+
+/* Tiptap editor content — readable font size */
+.tiptap-editor .tiptap-editor-content,
+.tiptap-simple-editor .tiptap-simple-content {
+  font-size: var(--admin-font-size-base);
+  line-height: 1.7;
+}
+
+/* Pagination */
+.pagination .page-link {
+  font-size: var(--admin-font-size-base);
+}
+
+/* Monospace code/source areas */
+.font-monospace,
+textarea.font-monospace,
+.form-control.font-monospace,
+.form-select.font-monospace {
+  font-size: var(--admin-font-size-sm) !important;
+}
+
+/* Media modal select card hover/active states */
+.media-select-card {
+  transition: all 0.15s ease;
+  border-width: 2px;
+}
+
+.media-select-card:hover {
+  border-color: #86b7fe;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(13, 110, 253, 0.15);
+}
+
 /* Editor toolbar — borderless + doubled icons */
 .tiptap-editor .card-header .btn,
 .tiptap-simple-editor .card-header .btn {

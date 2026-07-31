@@ -3,6 +3,7 @@ import { optionsAPI } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import TiptapSimpleEditor from '../../components/TiptapSimpleEditor'
+import { toast } from '../../utils/toast'
 
 export default function Settings() {
     const { lang } = useLanguage()
@@ -33,7 +34,7 @@ export default function Settings() {
                 })
             }
         } catch (err) {
-            alert(lang('loadSettingsFailed') + ': ' + err.message)
+            toast(lang('loadSettingsFailed') + ': ' + err.message, 'error')
         } finally {
             setLoading(false)
         }
@@ -51,9 +52,9 @@ export default function Settings() {
             if (refetchSettings) {
                 await refetchSettings()
             }
-            alert(lang('saveSuccess'))
+            toast(lang('saveSuccess'), 'success')
         } catch (err) {
-            alert(lang('error') + ': ' + err.message)
+            toast(lang('error') + ': ' + err.message, 'error')
         } finally {
             setSaving(false)
         }

@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { dataAPI, baseURL } from '../../services/api'
+import { dataAPI, apiUrl } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { toast } from '../../utils/toast'
 
 export default function Data() {
   const { lang } = useLanguage()
-  const apiBase = baseURL
-  const apiUrl = (path) => `${apiBase.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
   const [selectedFile, setSelectedFile] = useState(null)
   const [importing, setImporting] = useState(false)
   const [exporting, setExporting] = useState(false)
@@ -43,7 +42,7 @@ export default function Data() {
       link.remove()
       window.URL.revokeObjectURL(url)
     } catch (err) {
-      alert(err.message)
+      toast(err.message, 'error')
     } finally {
       setExporting(false)
     }
@@ -54,7 +53,7 @@ export default function Data() {
     e.preventDefault()
 
     if (!selectedFile) {
-      alert(lang('chooseXmlFirst'))
+      toast(lang('chooseXmlFirst'), 'error')
       return
     }
 
@@ -67,7 +66,7 @@ export default function Data() {
         setResult(res.data)
       }
     } catch (err) {
-      alert(err.message || lang('importFailed'))
+      toast(err.message || lang('importFailed'), 'error')
     } finally {
       setImporting(false)
     }
