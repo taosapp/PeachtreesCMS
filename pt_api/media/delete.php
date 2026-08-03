@@ -14,6 +14,7 @@ require_once __DIR__ . '/../cors.php';
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../response.php';
 require_once __DIR__ . '/../auth.php';
+require_once __DIR__ . '/_helpers.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     error('Method not allowed', 405);
@@ -45,6 +46,15 @@ if (!is_file($realPath)) {
 
 if (!@unlink($realPath)) {
     serverError('Failed to delete');
+}
+
+// 同步删除 pt_media 中的记录（文件已删，记录删除失败仅记日志，syncMediaLibrary 会清理孤儿）
+try {
+    $pdo = getDB();
+    $del = $pdo->prepare("DELETE FROM pt_media WHERE path = ?");
+    $del->execute(['upload/' . str_replace('\\', '/', $path)]);
+} catch (Throwable $e) {
+    error_log('pt_media delete failed: ' . $e->getMessage());
 }
 
 // Clean up empty directories (up to upload root)

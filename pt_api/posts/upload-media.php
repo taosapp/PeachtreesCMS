@@ -9,6 +9,7 @@ require_once __DIR__ . '/../cors.php';
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../response.php';
 require_once __DIR__ . '/../auth.php';
+require_once __DIR__ . '/../media/_helpers.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     error('Method not allowed', 405);
@@ -99,6 +100,15 @@ try {
 
     if (!move_uploaded_file($file['tmp_name'], $absolutePath)) {
         serverError('Failed to save file');
+    }
+
+    // 落库：写入 pt_media（DB 失败不阻断上传，syncMediaLibrary 会兜底补录）
+    try {
+        $pdo = getDB();
+        ensureMediaTable($pdo);
+        addMediaRecord($pdo, $user ? (int)$user['id'] : null, $relativePath, $file['name'], $mime, (int)$file['size']);
+    } catch (Throwable $e) {
+        error_log('pt_media insert failed: ' . $e->getMessage());
     }
 
     success([
